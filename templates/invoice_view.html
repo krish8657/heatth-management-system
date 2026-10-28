@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice {{ invoice.invoice_id }} - Smart Health</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .invoice-container {
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .invoice-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .invoice-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .company-info h1 {
+            font-size: 32px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .company-info p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .invoice-meta {
+            text-align: right;
+        }
+
+        .invoice-meta h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .invoice-meta p {
+            font-size: 16px;
+            opacity: 0.95;
+        }
+
+        .status-badge {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 14px;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .invoice-body {
+            padding: 40px;
+        }
+
+        .info-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+        }
+
+        .info-card h3 {
+            color: #667eea;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-card p {
+            color: #333;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .appointment-details {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 20px rgba(253, 203, 110, 0.3);
+        }
+
+        .appointment-details h2 {
+            color: #2d3436;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .detail-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .detail-item strong {
+            display: block;
+            color: #636e72;
+            font-size: 12px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .detail-item span {
+            color: #2d3436;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .payment-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .payment-section h2 {
+            color: #2d3436;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .payment-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #e4e9f2;
+        }
+
+        .payment-row:last-child {
+            border-bottom: none;
+        }
+
+        .payment-row.total {
+            border-top: 3px solid #667eea;
+            margin-top: 10px;
+            padding-top: 20px;
+        }
+
+        .payment-row .label {
+            color: #636e72;
+            font-weight: 500;
+        }
+
+        .payment-row .value {
+            color: #2d3436;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .payment-row.total .value {
+            color: #667eea;
+            font-size: 28px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+            min-width: 200px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            color: white;
+            box-shadow: 0 6px 20px rgba(0, 184, 148, 0.4);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 184, 148, 0.6);
+        }
+
+        .footer {
+            background: #f5f7fa;
+            padding: 30px 40px;
+            text-align: center;
+            color: #636e72;
+            border-top: 3px solid #e4e9f2;
+        }
+
+        .footer p {
+            margin: 5px 0;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .invoice-container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+
+            .action-buttons {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .invoice-header {
+                padding: 25px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .invoice-meta {
+                text-align: center;
+                margin-top: 20px;
+            }
+
+            .invoice-body {
+                padding: 25px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        .icon {
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <!-- Header -->
+        <div class="invoice-header">
+            <div class="header-content">
+                <div class="company-info">
+                    <h1><span class="icon">🏥</span> SMART HEALTH</h1>
+                    <p>Complete Healthcare Management</p>
+                </div>
+                <div class="invoice-meta">
+                    <h2>INVOICE</h2>
+                    <p><strong>{{ invoice.invoice_id }}</strong></p>
+                    <p>{{ invoice.created_at }}</p>
+                    <div class="status-badge">✓ {{ invoice.payment_status }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="invoice-body">
+            <!-- Info Cards -->
+            <div class="info-section">
+                <div class="info-card">
+                    <h3><span class="icon">👤</span> Bill To</h3>
+                    <p>{{ invoice.user_name }}</p>
+                    <p style="font-size: 14px; color: #636e72; margin-top: 5px;">{{ invoice.user_email }}</p>
+                </div>
+                <div class="info-card">
+                    <h3><span class="icon">👨‍⚕️</span> Doctor</h3>
+                    <p>{{ invoice.doctor_name }}</p>
+                </div>
+                <div class="info-card">
+                    <h3><span class="icon">💻</span> Consultation Type</h3>
+                    <p>{{ invoice.consultation_type }}</p>
+                </div>
+            </div>
+
+            <!-- Appointment Details -->
+            <div class="appointment-details">
+                <h2><span class="icon">📋</span> Appointment Details</h2>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <strong>📅 Date</strong>
+                        <span>{{ invoice.appointment_date }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>⏰ Time</strong>
+                        <span>{{ invoice.appointment_time }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>🤒 Symptoms/Reason</strong>
+                        <span>{{ invoice.symptoms }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>📍 Location</strong>
+                        <span>{{ invoice.clinic_address }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Breakdown -->
+            <div class="payment-section">
+                <h2><span class="icon">💰</span> Payment Summary</h2>
+                <div class="payment-row">
+                    <span class="label">Consultation Fees</span>
+                    <span class="value">₹{{ "%.2f"|format(invoice.subtotal) }}</span>
+                </div>
+                <div class="payment-row">
+                    <span class="label">Tax (10%)</span>
+                    <span class="value">₹{{ "%.2f"|format(invoice.tax) }}</span>
+                </div>
+                <div class="payment-row total">
+                    <span class="label"><strong>Total Amount</strong></span>
+                    <span class="value">₹{{ "%.2f"|format(invoice.amount) }}</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="{{ url_for('download_invoice', invoice_id=invoice_id) }}" class="btn btn-primary">
+                    <span class="icon">⬇️</span> Download PDF
+                </a>
+                <button onclick="window.print()" class="btn btn-secondary">
+                    <span class="icon">🖨️</span> Print Invoice
+                </button>
+                <a href="{{ url_for('inbox') }}" class="btn btn-success">
+                    <span class="icon">📬</span> Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>Thank you for choosing Smart Health!</strong></p>
+            <p>For any queries, please contact us at support@smarthealth.com</p>
+            <p style="margin-top: 10px; font-size: 12px;">This is a computer-generated invoice and requires no signature.</p>
+        </div>
+    </div>
+</body>
+</html>

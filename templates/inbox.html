@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Inbox - Smart Health</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { 
+            background: linear-gradient(135deg, #BFDDDE 0%, rgba(131, 200, 209, 0.3) 50%, rgba(7, 80, 97, 0.05) 100%);
+            color: #075061; 
+            min-height: 100vh;
+        }
+        .glass-panel { 
+            background: rgba(191, 221, 222, 0.3);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(131, 200, 209, 0.4);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(7, 80, 97, 0.1);
+        }
+        .tab-btn.active { 
+            border-bottom: 2px solid #228693; 
+            color: #228693;
+        }
+        .hidden-details { display: none; }
+
+        /* Navbar Styles */
+        .navbar {
+            background: linear-gradient(135deg, rgba(7, 80, 97, 0.7), rgba(34, 134, 147, 0.7));
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 20px 30px;
+            box-shadow: 0 8px 32px rgba(7, 80, 97, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            animation: slideDownNav 0.6s ease-out;
+            margin: -1.5rem -1.5rem 2rem -1.5rem;
+            border-bottom: 1px solid rgba(131, 200, 209, 0.2);
+        }
+
+        @keyframes slideDownNav {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: white;
+            font-weight: 800;
+            font-size: 1.4rem;
+            transition: all 0.3s;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .nav-logo-icon {
+            font-size: 1.8rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s;
+            position: relative;
+            padding-bottom: 5px;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: rgba(228, 249, 209, 0.8);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-links a:hover {
+            color: #E4F9D1;
+            transform: translateY(-3px);
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 15px 20px;
+            }
+
+            .nav-links {
+                gap: 15px;
+                font-size: 0.9rem;
+            }
+
+            .nav-logo {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body class="p-6">
+    <!-- Navigation -->
+    <div class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">
+                SmartHealth
+            </a>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/my_health_records">Records</a></li>
+                <li><a href="/inbox">Inbox</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Payment confirmation toast -->
+    <div id="paymentToast" style="display:none; position: fixed; top: 20px; right: 20px; z-index: 2000; padding: 14px 18px; background: linear-gradient(90deg,#169C81,#005D7E); color: white; border-radius: 10px; box-shadow: 0 8px 30px rgba(5,100,95,0.15); font-weight:700;">
+        <span id="toastIcon">✅</span>
+        <span id="toastText" style="margin-left:10px;">Payment completed successfully</span>
+    </div>
+
+
+    <div class="max-w-6xl mx-auto">
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#005D7E] to-[#169C81]">My Inbox</h1>
+            <div class="flex items-center gap-4">
+                </a>
+                <a href="/" class="text-gray-500 hover:text-[#005D7E]">← Dashboard</a>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left Column: Notifications -->
+            <div class="lg:col-span-1">
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <span>🔔</span> Notifications
+                </h2>
+                <div class="space-y-4">
+                    {% for notif in notifications %}
+                    <div class="glass-panel p-4 border-l-4 border-[#169C81]">
+                        <h3 class="font-bold text-sm text-[#005D7E]">{{ notif.title }}</h3>
+                        <p class="text-gray-600 text-xs mt-1">{{ notif.message }}</p>
+                        <span class="text-gray-400 text-[10px] mt-2 block">{{ notif.time }}</span>
+                    </div>
+                    {% else %}
+                    <div class="text-gray-500 text-sm">No new notifications.</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Right Column: Appointments & Labs -->
+            <div class="lg:col-span-2 space-y-8">
+                
+                <!-- Appointments Section -->
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold flex items-center gap-2">
+                            <span>📅</span> Upcoming Appointments
+                        </h2>
+                        <a href="/doctors" class="text-sm text-[#169C81] hover:underline">+ Book New</a>
+                    </div>
+                    
+                    <div class="glass-panel overflow-hidden">
+                        {% for appt in appointments %}
+                        {% if appt.status != 'Completed' %}
+                        <!-- Appointment Card Header -->
+                        <div class="p-4 border-b border-gray-200 flex justify-between items-center cursor-pointer hover:bg-[#E4F9D1]/30 transition" onclick="toggleDetails('{{ appt._id }}')">
+                            <div>
+                                <div class="font-bold text-lg">
+                                    {{ appt.doctor_name }} 
+                                    <span class="text-sm text-gray-500 font-normal">({{ appt.date }}{% if appt.time and appt.status == 'Confirmed' and appt.payment_status == 'completed' %} • {{ appt.time }}{% endif %})</span>
+                                </div>
+                                
+                                {% if appt.status == 'Declined' and appt.decline_reason %}
+                                <div class="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg max-w-md">
+                                    <p class="text-xs text-red-300 font-bold">Doctor's Message:</p>
+                                    <p class="text-sm text-gray-600 italic">"{{ appt.decline_reason }}"</p>
+                                </div>
+                                {% else %}
+                                <div class="text-sm text-gray-500 mt-1">{{ appt.symptoms }}</div>
+                                {% endif %}
+
+                                {% if appt.status == 'Pending' %}
+                                <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                    <p class="text-sm text-yellow-700 font-semibold">⏳ Waiting for Doctor Approval</p>
+                                    <p class="text-xs text-yellow-600 mt-1">Your appointment request is pending. The doctor will review and approve it soon.</p>
+                                </div>
+                                {% elif appt.status == 'Awaiting Payment' %}
+                                <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <p class="text-sm text-blue-700 font-semibold">✓ Doctor Approved</p>
+                                    <p class="text-xs text-blue-600 mt-1">Complete payment to see appointment time and meeting link</p>
+                                </div>
+                                <div class="mt-3">
+                                    <form action="/checkout/appointment/{{ appt._id }}" method="GET">
+                                        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white text-sm font-bold rounded-lg transition shadow-lg shadow-green-500/20 transform hover:scale-105">
+                                            💳 Complete Payment
+                                        </button>
+                                    </form>
+                                </div>
+                                {% endif %}
+
+                                {% if appt.status == 'Confirmed' and appt.payment_status == 'completed' and appt.time %}
+                                <div class="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                    <p class="text-sm text-green-700 font-semibold">✓ Confirmed & Paid</p>
+                                    <p class="text-xs text-green-600 mt-1">📅 Time: {{ appt.time }}</p>
+                                </div>
+                                {% endif %}
+
+                                {% if appt.status == 'Confirmed' and appt.payment_status == 'completed' and appt.meeting_link %}
+                                <div class="mt-3">
+                                    <a href="{{ appt.meeting_link }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-sm font-bold rounded-lg transition shadow-lg shadow-blue-500/20 transform hover:scale-105 animate-pulse">
+                                        📹 Join Meeting Now
+                                    </a>
+                                </div>
+                                {% endif %}
+
+                                {% if appt.status not in ['Completed', 'Declined', 'Cancelled'] %}
+                                <div class="mt-3">
+                                    <form action="/cancel/appointment/{{ appt._id }}" method="POST" onsubmit="return confirm('Cancel this appointment? A refund will be initiated if already paid.');">
+                                        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-sm font-bold rounded-lg transition shadow-lg shadow-red-500/20">
+                                            ❌ Cancel Appointment
+                                        </button>
+                                    </form>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="text-right flex-shrink-0 ml-4">
+                                <span class="text-xs px-3 py-1 rounded-full font-bold border border-white/10
+                                    {% if appt.status == 'Declined' %}bg-red-100 text-red-600
+                                    {% elif appt.status == 'Pending' %}bg-yellow-100 text-yellow-600
+                                    {% elif appt.status == 'Awaiting Payment' %}{% if appt.payment_status == 'completed' %}bg-green-100 text-green-600{% else %}bg-blue-100 text-blue-600{% endif %}
+                                    {% elif appt.status == 'Confirmed' %}{% if appt.payment_status == 'completed' %}bg-[#E4F9D1] text-[#005D7E]{% else %}bg-orange-100 text-orange-600{% endif %}
+                                    {% elif appt.status == 'Completed' %}bg-gray-200 text-gray-700
+                                    {% else %}bg-gray-100 text-gray-500{% endif %}">
+                                    {% if appt.status == 'Awaiting Payment' and appt.payment_status != 'completed' %}✓ Approved
+                                    {% elif appt.status == 'Awaiting Payment' and appt.payment_status == 'completed' %}✓ Paid
+                                    {% elif appt.status == 'Confirmed' and appt.payment_status == 'completed' %}✓ Confirmed
+                                    {% else %}{{ appt.status or 'Pending' }}{% endif %}
+                                </span>
+                                {% if appt.status == 'Declined' %}
+                                <a href="{{ url_for('book_appointment') }}" class="mt-2 block text-xs text-[#169C81] hover:underline">Re-book Now</a>
+                                {% else %}
+                                <div class="text-xs text-gray-500 mt-2">▼ Details</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Hidden Details Section -->
+                        <div id="details-{{ appt._id }}" class="hidden-details bg-[#F1F9FD] border-b border-gray-200 p-6 animate__animated animate__fadeIn">
+                            
+                            <!-- Prescriptions -->
+                            {% if appt.prescriptions %}
+                            <div class="mb-6">
+                                <h4 class="text-[#169C81] font-bold mb-2 flex items-center gap-2">💊 Prescribed Medicines</h4>
+                                <ul class="space-y-2">
+                                    {% for rx in appt.prescriptions %}
+                                    <li class="bg-white p-3 rounded text-sm border border-gray-200">
+                                        <div class="flex justify-between items-center mb-1">
+                                            <span class="font-bold text-[#005D7E]">{{ rx.medicine_name }}</span>
+                                            <div class="flex gap-2">
+                                                <span class="bg-[#E4F9D1] text-[#005D7E] px-2 py-0.5 rounded text-xs">{{ rx.frequency or rx.dosage }}</span>
+                                                {% if rx.duration %}
+                                                <span class="bg-[#D2F0F0] text-[#005D7E] px-2 py-0.5 rounded text-xs">{{ rx.duration }} Days</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% if rx.instructions %}
+                                        <div class="text-gray-500 text-xs italic">Note: {{ rx.instructions }}</div>
+                                        {% endif %}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+
+                            <!-- Reports Section -->
+                            <div class="mb-4">
+                                <h4 class="text-[#005D7E] font-bold mb-2 flex items-center gap-2">📂 Medical Reports</h4>
+                                
+                                <!-- List Existing Reports -->
+                                {% if appt.reports %}
+                                <ul class="space-y-2 mb-4">
+                                    {% for report in appt.reports %}
+                                    <li class="flex justify-between items-center text-sm text-gray-600 bg-white p-2 rounded border border-gray-200">
+                                        <span>{{ report.name }}</span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xs bg-[#D2F0F0] text-[#005D7E] px-2 py-1 rounded">{{ report.type }}</span>
+                                            {% if report.filename %}
+                                            <a href="{{ url_for('static', filename='uploads/' + report.filename) }}" target="_blank" class="text-[#169C81] hover:text-[#005D7E] text-xs">View</a>
+                                            {% endif %}
+                                        </div>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
+
+                                <!-- Link Existing Reports Form -->
+                                <form action="/link_reports" method="POST" class="mt-3 p-3 bg-white rounded-lg border border-gray-200">
+                                    <p class="text-xs text-gray-500 mb-2 font-bold">Select Reports to Share:</p>
+                                    <input type="hidden" name="appointment_id" value="{{ appt._id }}">
+                                    
+                                    {% if user_reports %}
+                                    <div class="max-h-32 overflow-y-auto space-y-2 mb-3">
+                                        {% for report in user_reports %}
+                                        <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer hover:bg-gray-50 p-1 rounded transition">
+                                            <input type="checkbox" name="report_ids" value="{{ report._id }}" class="rounded bg-gray-100 border-gray-300 text-[#169C81] focus:ring-0 cursor-pointer">
+                                            <span class="truncate">{{ report.name }} <span class="text-xs text-gray-400">({{ report.date }})</span></span>
+                                        </label>
+                                        {% endfor %}
+                                    </div>
+                                    <button type="submit" class="w-full bg-[#005D7E] hover:bg-[#169C81] text-white text-xs px-3 py-2 rounded font-bold transition shadow-lg">Share Selected Reports</button>
+                                    {% else %}
+                                    <div class="text-center py-2">
+                                        <p class="text-xs text-gray-500 italic mb-1">No reports in your records.</p>
+                                        <a href="/my_health_records" class="text-xs text-[#169C81] hover:underline">Go to My Records to Upload</a>
+                                    </div>
+                                    {% endif %}
+                                </form>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Lab Tests Section -->
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold flex items-center gap-2">
+                            <span>🧪</span> Lab Test Bookings
+                        </h2>
+                        <a href="/lab_tests" class="text-sm text-[#169C81] hover:underline">+ Book Test</a>
+                    </div>
+
+                    <div class="glass-panel overflow-hidden">
+                        {% for lab in lab_bookings %}
+                        <div class="p-4 border-b border-gray-200 flex justify-between items-start last:border-0">
+                            <div>
+                                <div class="font-bold">{{ lab.test_name }}</div>
+                                <div class="text-sm text-gray-500">📅 Requested for: {{ lab.booking_date if lab.booking_date else lab.date }}</div>
+                                {% if lab.status == 'Scheduled' and lab.payment_status == 'completed' %}
+                                <div class="mt-2 text-sm text-green-700">✅ Booked on: {{ lab.scheduled_date }} at {{ lab.scheduled_time }}</div>
+                                {% elif lab.status in ['Scheduled', 'Awaiting Payment'] and lab.payment_status != 'completed' %}
+                                <div class="mt-2 text-xs text-blue-600">🕐 Scheduled: {{ lab.scheduled_date }} at {{ lab.scheduled_time }} (Awaiting Payment)</div>
+                                {% endif %}
+                            </div>
+                            <div class="text-right">
+                                <span class="bg-[#D2F0F0] text-[#005D7E] text-xs px-3 py-1 rounded-full">{{ lab.status }}</span>
+
+                                {% if lab.status in ['Approved', 'Scheduled', 'Awaiting Payment'] and lab.payment_status != 'completed' %}
+                                <div class="mt-2">
+                                    <a href="/lab/awaiting-payment/{{ lab._id_str }}" class="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white text-xs font-bold rounded-lg transition shadow-lg shadow-green-500/20">
+                                        💳 Complete Payment
+                                    </a>
+                                </div>
+                                {% endif %}
+
+                                {% if lab.status not in ['Cancelled', 'Rejected', 'Test Done'] %}
+                                <div class="mt-2">
+                                    <form action="/cancel/lab/{{ lab._id_str }}" method="POST" onsubmit="return confirm('Cancel this lab booking? A refund will be initiated if already paid.');">
+                                        <button type="submit" class="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-xs font-bold rounded-lg transition shadow-lg shadow-red-500/20">
+                                            ❌ Cancel Test
+                                        </button>
+                                    </form>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="p-6 text-center text-gray-500">No lab tests booked.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Completed Appointments Section -->
+                <div>
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <span>✅</span> Completed Appointments
+                    </h2>
+                    <div class="glass-panel overflow-hidden">
+                        {% for appt in appointments %}
+                        {% if appt.status == 'Completed' %}
+                        <div class="p-4 border-b border-gray-200 flex justify-between items-center cursor-pointer hover:bg-[#E4F9D1]/30 transition" onclick="toggleDetails('{{ appt._id }}')">
+                            <div>
+                                <div class="font-bold text-lg text-gray-500 line-through decoration-gray-400">
+                                    {{ appt.doctor_name }}
+                                    <span class="text-sm text-gray-400 no-underline">({{ appt.date }})</span>
+                                </div>
+                                <div class="text-xs text-[#169C81] mt-1">Consultation Done</div>
+                            </div>
+                            <div class="text-right">
+                                <span class="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-full border border-gray-300">Completed</span>
+                                <div class="text-xs text-gray-500 mt-2">▼ View Advice</div>
+                            </div>
+                        </div>
+
+                        <!-- Hidden Details for Completed -->
+                        <div id="details-{{ appt._id }}" class="hidden-details bg-[#F1F9FD] border-b border-gray-200 p-6 animate__animated animate__fadeIn">
+                            
+                            <!-- Prescriptions -->
+                            {% if appt.prescriptions %}
+                            <div class="mb-6">
+                                <h4 class="text-[#169C81] font-bold mb-2 flex items-center gap-2">💊 Prescribed Medicines</h4>
+                                <ul class="space-y-2">
+                                    {% for rx in appt.prescriptions %}
+                                    <li class="bg-white p-3 rounded text-sm border border-gray-200">
+                                        <div class="flex justify-between items-center mb-1">
+                                            <span class="font-bold text-[#005D7E]">{{ rx.medicine_name }}</span>
+                                            <div class="flex gap-2">
+                                                <span class="bg-[#E4F9D1] text-[#005D7E] px-2 py-0.5 rounded text-xs">{{ rx.frequency or rx.dosage }}</span>
+                                                {% if rx.duration %}
+                                                <span class="bg-[#D2F0F0] text-[#005D7E] px-2 py-0.5 rounded text-xs">{{ rx.duration }} Days</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% if rx.instructions %}
+                                        <div class="text-gray-500 text-xs italic">Note: {{ rx.instructions }}</div>
+                                        {% endif %}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+
+                            <!-- Meal Plan -->
+                            {% if appt.meal_plan %}
+                            <div class="mb-6">
+                                <h4 class="text-yellow-600 font-bold mb-2 flex items-center gap-2">🥗 Meal Plan</h4>
+                                <div class="bg-white p-3 rounded text-sm text-gray-600 whitespace-pre-wrap border border-gray-200">{{ appt.meal_plan }}</div>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Fallback: Check for 'meals' list if 'meal_plan' string is missing -->
+                            {% if not appt.meal_plan and appt.meals %}
+                            <div class="mb-6">
+                                <h4 class="text-yellow-600 font-bold mb-2 flex items-center gap-2">🥗 Meal Plan</h4>
+                                {% for meal in appt.meals %}
+                                <div class="bg-white p-3 rounded text-sm text-gray-600 whitespace-pre-wrap mb-2 border border-gray-200">{{ meal.meal_plan }}</div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleDetails(id) {
+            const el = document.getElementById('details-' + id);
+            if (el) {
+                el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+            }
+        }
+    </script>
+    <script>
+        // Show a small animated toast for payment success
+        function showPaymentToast(message) {
+            const toast = document.getElementById('paymentToast');
+            const text = document.getElementById('toastText');
+            if (!toast) return;
+            text.textContent = message || 'Payment completed successfully';
+            toast.style.display = 'block';
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-8px)';
+            // entrance
+            requestAnimationFrame(() => {
+                toast.style.transition = 'transform 300ms ease, opacity 300ms ease';
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateY(0)';
+            });
+
+            // auto hide
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-8px)';
+                setTimeout(() => toast.style.display = 'none', 300);
+            }, 3800);
+        }
+
+        // If redirected with ?paid=1 show toast
+        (function checkPaidParam() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('paid') === '1') {
+                    showPaymentToast('Payment successful — appointment confirmed');
+                    // clear param from address bar without reload
+                    if (history.replaceState) {
+                        const url = new URL(window.location);
+                        url.searchParams.delete('paid');
+                        history.replaceState({}, '', url.pathname + url.search + url.hash);
+                    }
+                }
+            } catch (e) {}
+        })();
+
+        // Listen for storage events from payment window
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'smart_health_payment' && e.newValue) {
+                try {
+                    const payload = JSON.parse(e.newValue);
+                    showPaymentToast('Payment successful — ' + (payload.data && payload.data.appointmentId ? 'Appointment paid' : 'Payment received'));
+                    // remove the key so the toast doesn't re-trigger
+                    localStorage.removeItem('smart_health_payment');
+                } catch (err) {
+                    showPaymentToast('Payment successful');
+                }
+            }
+        });
+
+        // Also listen to postMessage (in case opener used postMessage)
+        window.addEventListener('message', (ev) => {
+            try {
+                const payload = ev.data;
+                if (payload && payload.type === 'payment_success') {
+                    showPaymentToast('Payment successful — confirmation received');
+                }
+            } catch (e) {}
+        });
+    </script>
+</body>
+</html>

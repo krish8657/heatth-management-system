@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Lab Test Reports</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        .drag-over {
+            background: #e0e7ff !important;
+            border-color: #6366f1 !important;
+        }
+        .file-preview {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4 py-8">
+    <div class="w-full max-w-2xl">
+        <!-- Main Card -->
+        <div class="glass rounded-2xl shadow-2xl overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6">
+                <h1 class="text-3xl font-bold text-white flex items-center gap-3 mb-2">
+                    <span class="text-4xl">📄</span> Upload Lab Reports
+                </h1>
+                <p class="text-indigo-100">Upload your lab test reports to complete the process</p>
+            </div>
+
+            <!-- Content -->
+            <div class="p-8">
+                <!-- Booking Info -->
+                <div class="bg-blue-50 rounded-xl p-4 mb-6 border border-blue-200">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-xs text-gray-600 font-semibold">Test Name</p>
+                            <p class="font-bold text-blue-900">{{ lab.test_name }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-600 font-semibold">Scheduled Date</p>
+                            <p class="font-bold text-blue-900">{{ lab.scheduled_date }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload Area -->
+                <div class="mb-6">
+                    <label class="block text-sm font-bold text-gray-700 mb-3">
+                        📎 Upload Report Files
+                        <span class="text-red-500">*</span>
+                    </label>
+                    <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                        <div class="flex flex-col items-center gap-2">
+                            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <p class="text-lg font-semibold text-gray-700">Drag and drop files here</p>
+                            <p class="text-sm text-gray-500">or click to select files</p>
+                            <p class="text-xs text-gray-400 mt-2">Supported: PDF, PNG, JPG, JPEG (Max 5MB per file)</p>
+                        </div>
+                        <input type="file" id="fileInput" multiple accept=".pdf,.png,.jpg,.jpeg" class="hidden">
+                    </div>
+                </div>
+
+                <!-- File List -->
+                <div id="fileList" class="space-y-2 mb-6">
+                    <!-- Files will appear here -->
+                </div>
+
+                <!-- Upload Status -->
+                <div id="uploadStatus" class="hidden mb-4 p-3 rounded-lg bg-blue-50 border border-blue-200">
+                    <p class="text-sm text-blue-800" id="statusText">Uploading files...</p>
+                </div>
+
+                <!-- Success Message -->
+                <div id="successMessage" class="hidden mb-4 p-4 rounded-lg bg-green-50 border-l-4 border-green-500">
+                    <p class="text-sm text-green-800">
+                        <strong>✅ Success!</strong> Your reports have been uploaded successfully. They will be visible in your Health Records.
+                    </p>
+                </div>
+
+                <!-- Info Box -->
+                <div class="bg-amber-50 rounded-lg p-4 mb-6 border border-amber-200">
+                    <p class="text-sm text-amber-900">
+                        <strong>ℹ️ Note:</strong> Please upload clear scans or images of your lab test reports. You can upload multiple files. After uploading, your reports will be available in your Health Records section.
+                    </p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="space-y-3">
+                    <button type="button" onclick="uploadFiles()" class="w-full px-6 py-3 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed" id="uploadBtn" disabled>
+                        <span id="uploadBtnText">📤 Upload Reports</span>
+                    </button>
+                    <a href="/inbox" class="w-full px-6 py-3 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold transition-all text-center">
+                        Skip & Return to Inbox
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const bookingId = '{{ lab._id }}';
+        let selectedFiles = [];
+
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Highlight drop area when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-over'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-over'), false);
+        });
+
+        // Handle dropped files
+        dropZone.addEventListener('drop', (e) => {
+            selectedFiles = Array.from(e.dataTransfer.files);
+            displayFiles();
+        }, false);
+
+        // Handle click on drop zone
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        // Handle file input change
+        fileInput.addEventListener('change', (e) => {
+            selectedFiles = Array.from(e.target.files);
+            displayFiles();
+        });
+
+        function displayFiles() {
+            fileList.innerHTML = '';
+            selectedFiles.forEach((file, index) => {
+                const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-preview flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200 hover:bg-gray-100';
+                fileItem.innerHTML = `
+                    <div class="flex items-center gap-3 flex-1">
+                        <span class="text-2xl">
+                            ${file.type === 'application/pdf' ? '📕' : '🖼️'}
+                        </span>
+                        <div>
+                            <p class="font-semibold text-gray-800 text-sm truncate">${file.name}</p>
+                            <p class="text-xs text-gray-500">${fileSize} MB</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="removeFile(${index})" class="text-red-500 hover:text-red-700 font-bold">✕</button>
+                `;
+                fileList.appendChild(fileItem);
+            });
+
+            uploadBtn.disabled = selectedFiles.length === 0;
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            displayFiles();
+        }
+
+        async function uploadFiles() {
+            if (selectedFiles.length === 0) {
+                alert('Please select at least one file to upload');
+                return;
+            }
+
+            const formData = new FormData();
+            selectedFiles.forEach(file => {
+                formData.append('files', file);
+            });
+
+            uploadBtn.disabled = true;
+            document.getElementById('uploadStatus').classList.remove('hidden');
+
+            try {
+                const response = await fetch(`/lab/upload-reports/${bookingId}`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('uploadStatus').classList.add('hidden');
+                    document.getElementById('successMessage').classList.remove('hidden');
+                    setTimeout(() => {
+                        window.location.href = '/inbox';
+                    }, 2000);
+                } else {
+                    alert('Error uploading files: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while uploading files');
+            } finally {
+                uploadBtn.disabled = false;
+                document.getElementById('uploadStatus').classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>

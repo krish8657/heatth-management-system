@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab Test Scheduled</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-slide-in {
+            animation: slideIn 0.6s ease-out;
+        }
+        .success-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+    <div class="w-full max-w-2xl">
+        <!-- Main Card -->
+        <div class="glass rounded-2xl shadow-2xl overflow-hidden animate-slide-in">
+            <!-- Header with Success -->
+            <div class="bg-gradient-to-r from-green-500 to-emerald-600 px-8 py-8">
+                <div class="text-center">
+                    <div class="text-6xl mb-4 inline-block success-pulse">✅</div>
+                    <h1 class="text-4xl font-bold text-white mb-2">Lab Test Scheduled!</h1>
+                    <p class="text-green-100 text-lg">Your payment has been confirmed and your test is ready.</p>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="p-8">
+                <!-- Confirmation Badge -->
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 mb-8 border-2 border-green-300">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="text-4xl">📋</div>
+                        <div>
+                            <p class="text-sm text-gray-600 font-semibold">Status</p>
+                            <p class="text-2xl font-bold text-green-700">CONFIRMED & SCHEDULED</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Details -->
+                <div class="bg-blue-50 rounded-xl p-6 mb-8 border-2 border-blue-200">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">📋 Test Details</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white p-4 rounded-lg border border-blue-100">
+                            <p class="text-xs text-gray-600 font-semibold mb-1">TEST NAME</p>
+                            <p class="text-lg font-bold text-blue-900">{{ lab.test_name }}</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg border border-blue-100">
+                            <p class="text-xs text-gray-600 font-semibold mb-1">HOSPITAL/LAB</p>
+                            <p class="text-lg font-bold text-blue-900">{{ lab.hospital_name }}</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg border border-blue-100">
+                            <p class="text-xs text-gray-600 font-semibold mb-1">📅 SCHEDULED DATE</p>
+                            <p class="text-lg font-bold text-green-700">{{ lab.scheduled_date }}</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg border border-blue-100">
+                            <p class="text-xs text-gray-600 font-semibold mb-1">🕐 SCHEDULED TIME</p>
+                            <p class="text-lg font-bold text-green-700">{{ lab.scheduled_time }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Confirmed -->
+                <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-6 mb-8 border-2 border-emerald-300">
+                    <h2 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                        <span class="text-2xl">💰</span> Payment Confirmed
+                    </h2>
+                    <p class="text-sm text-gray-700 mb-3">Amount paid: <span class="font-bold text-emerald-700">₹{{ total }}</span></p>
+                    <p class="text-xs text-gray-600">✓ Confirmation email has been sent to your registered email address.</p>
+                </div>
+
+                <!-- What's Next -->
+                <div class="bg-amber-50 rounded-xl p-6 mb-8 border-2 border-amber-200">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <span class="text-2xl">📝</span> What's Next?
+                    </h2>
+                    <ol class="space-y-3">
+                        <li class="flex gap-3">
+                            <span class="inline-flex items-center justify-center w-6 h-6 bg-amber-500 text-white rounded-full text-sm font-bold flex-shrink-0">1</span>
+                            <span class="text-sm text-gray-700"><strong>Arrive on time:</strong> Come to {{ lab.hospital_name }} on {{ lab.scheduled_date }} at {{ lab.scheduled_time }}</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="inline-flex items-center justify-center w-6 h-6 bg-amber-500 text-white rounded-full text-sm font-bold flex-shrink-0">2</span>
+                            <span class="text-sm text-gray-700"><strong>Complete the test:</strong> Follow the hospital's instructions for your lab test</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="inline-flex items-center justify-center w-6 h-6 bg-amber-500 text-white rounded-full text-sm font-bold flex-shrink-0">3</span>
+                            <span class="text-sm text-gray-700"><strong>Upload reports:</strong> After the test, click "Schedule Done" to upload your reports</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="inline-flex items-center justify-center w-6 h-6 bg-amber-500 text-white rounded-full text-sm font-bold flex-shrink-0">4</span>
+                            <span class="text-sm text-gray-700"><strong>View results:</strong> Your test reports will appear in your Health Records section</span>
+                        </li>
+                    </ol>
+                </div>
+
+                <!-- Important Info -->
+                <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-8 rounded">
+                    <p class="text-sm text-red-800">
+                        <strong>⚠️ Important:</strong> Please arrive 10-15 minutes before your scheduled time. Bring a valid ID and any necessary documents. If you need to cancel or reschedule, contact the hospital immediately.
+                    </p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="space-y-3">
+                    <a href="/inbox" class="w-full px-6 py-3 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold transition-all text-center">
+                        ← Back to Inbox
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

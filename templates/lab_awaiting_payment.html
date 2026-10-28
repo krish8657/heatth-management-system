@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Lab Test Payment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        .shimmer {
+            animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+    <div class="w-full max-w-2xl">
+        <!-- Main Card -->
+        <div class="glass rounded-2xl shadow-2xl overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="text-4xl">💳</div>
+                    <h1 class="text-3xl font-bold text-white">Complete Payment</h1>
+                </div>
+                <p class="text-blue-100">Your lab test is approved and scheduled. Please complete payment to confirm.</p>
+            </div>
+
+            <!-- Content -->
+            <div class="p-8">
+                <!-- Booking Details -->
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 mb-8 border-2 border-blue-200">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <span class="text-2xl">📋</span> Test Details
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-600 font-semibold">Test Name</p>
+                            <p class="text-lg font-bold text-blue-900">{{ lab.test_name }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 font-semibold">Hospital/Lab</p>
+                            <p class="text-lg font-bold text-blue-900">{{ lab.hospital_name }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 font-semibold">📅 Scheduled Date</p>
+                            <p class="text-lg font-bold text-blue-900">{{ lab.scheduled_date }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 font-semibold">🕐 Scheduled Time</p>
+                            <p class="text-lg font-bold text-blue-900">{{ lab.scheduled_time }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Summary -->
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 mb-8 border-2 border-green-200">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <span class="text-2xl">💰</span> Payment Summary
+                    </h2>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center pb-3 border-b border-green-200">
+                            <span class="text-gray-700">Test Cost</span>
+                            <span class="text-lg font-bold text-green-900">₹{{ cost }}</span>
+                        </div>
+                        <div class="flex justify-between items-center pb-3 border-b border-green-200">
+                            <span class="text-gray-700">Tax (10%)</span>
+                            <span class="text-lg font-bold text-green-900">₹{{ tax }}</span>
+                        </div>
+                        <div class="flex justify-between items-center pt-2">
+                            <span class="text-lg font-bold text-gray-800">Total Amount</span>
+                            <span class="text-2xl font-bold text-green-600">₹{{ total }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Important Notice -->
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8 rounded">
+                    <p class="text-sm text-yellow-800">
+                        <strong>⚠️ Important:</strong> Complete the payment before the scheduled date to confirm your appointment. If payment is not completed before the scheduled time, your booking will be cancelled.
+                    </p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="space-y-3">
+                    <form action="/checkout/lab_test" method="GET">
+                        <input type="hidden" name="booking_id" value="{{ lab._id_str }}">
+                        <button type="submit" class="w-full px-6 py-4 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-2">
+                            <span class="text-2xl">💳</span>
+                            <span>Proceed to Payment</span>
+                        </button>
+                    </form>
+                    <a href="/inbox" class="w-full px-6 py-3 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold transition-all text-center flex items-center justify-center gap-2">
+                        <span>← Back to Inbox</span>
+                    </a>
+                </div>
+
+                <!-- Info Box -->
+                <div class="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <p class="text-sm text-blue-900">
+                        <strong>ℹ️ What happens next?</strong><br/>
+                        1. Complete payment below<br/>
+                        2. You'll be redirected to scheduled status<br/>
+                        3. A confirmation email will be sent<br/>
+                        4. Upload lab reports after the test
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

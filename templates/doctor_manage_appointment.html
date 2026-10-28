@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Appointment | Smart Health</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(to right, #0f2027, #203a43, #2c5364); color: white; min-height: 100vh; }
+        .glass-panel { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; }
+        .form-input { background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); color: white; transition: all 0.3s; }
+        .form-input:focus { outline: none; border-color: #4facfe; box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.2); }
+        .btn-gradient { background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; font-weight: bold; transition: transform 0.2s; }
+        .btn-gradient:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4); }
+        .btn-success-custom { background: linear-gradient(135deg, #42e695, #3bb2b8); color: white; }
+        
+        /* Custom Scrollbar for lists */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+    </style>
+</head>
+<body class="p-6">
+
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Manage Appointment</h1>
+            <p class="text-gray-400">Patient: {{ user.username }}</p>
+        </div>
+        <a href="{{ url_for('doctor_dashboard') }}" class="px-4 py-2 border border-white/20 rounded-lg hover:bg-white/10 transition text-sm text-white">Back to Dashboard</a>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-6 space-y-2">
+                {% for category, message in messages %}
+                    <div class="p-4 rounded-xl flex items-center gap-3 {{ 'bg-green-500/20 text-green-300 border border-green-500/30' if category == 'success' else 'bg-red-500/20 text-red-300 border border-red-500/30' if category == 'error' else 'bg-blue-500/20 text-blue-300 border border-blue-500/30' }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column: Patient Info & Scheduling -->
+        <div class="lg:col-span-1 space-y-6">
+            
+            <!-- Patient Details Card -->
+            <div class="glass-panel p-6">
+                <h3 class="text-xl font-bold text-blue-400 mb-4 border-b border-white/10 pb-2">Patient Details</h3>
+                <div class="space-y-3">
+                    <div>
+                        <span class="text-gray-400 text-sm block">Full Name</span>
+                        <span class="text-lg font-semibold">{{ user.username }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 text-sm block">Allergies</span>
+                        <span class="text-white">{{ user.allergies if user.allergies else 'None' }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 text-sm block">Chronic Conditions</span>
+                        <span class="text-white">{{ user.chronic_conditions if user.chronic_conditions else 'None' }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 text-sm block">Date Requested</span>
+                        <span>{{ appointment.date }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 text-sm block">Symptoms</span>
+                        <p class="text-gray-300 italic bg-black/20 p-3 rounded-lg mt-1">"{{ appointment.symptoms }}"</p>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 text-sm block">Current Status</span>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold inline-block mt-1
+                            {% if appointment.status == 'Confirmed' %}bg-green-500/20 text-green-300
+                            {% elif appointment.status == 'Completed' %}bg-blue-500/20 text-blue-300
+                            {% else %}bg-yellow-500/20 text-yellow-300{% endif %}">
+                            {{ appointment.status }}
+                        </span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 text-sm block">Payment Status</span>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold inline-block mt-1
+                            {% if appointment.payment_status == 'completed' %}bg-green-500/20 text-green-300
+                            {% else %}bg-orange-500/20 text-orange-300{% endif %}">
+                            {% if appointment.payment_status == 'completed' %}✓ Paid{% else %}⏳ Pending{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scheduling Section -->
+            {% if appointment.status in ['Pending', 'Accepted'] %}
+            <div class="glass-panel p-6 border-l-4 border-green-400">
+                <h3 class="text-xl font-bold text-green-400 mb-4">Schedule Appointment</h3>
+                
+                {% if appointment.time %}
+                <!-- Time Already Set -->
+                <div class="mb-4">
+                    <span class="text-gray-400 text-sm block">Scheduled Time</span>
+                    <span class="text-2xl font-bold text-green-400">{{ appointment.time }}</span>
+                    <p class="text-xs text-gray-500 mt-1">Time slot was set when accepting the appointment.</p>
+                </div>
+                {% else %}
+                <!-- No Time Set Yet -->  
+                <div class="bg-yellow-500/20 border border-yellow-500/40 rounded-lg p-4 mb-4">
+                    <p class="text-yellow-300 text-sm">⚠️ Time slot not set yet. Please accept from dashboard first.</p>
+                </div>
+                {% endif %}
+                
+                <form method="POST" class="space-y-4">
+                    <input type="hidden" name="action" value="update_appointment">
+                    <input type="hidden" name="time" value="{{ appointment.time or '' }}">
+
+                    <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                        <p class="text-sm text-blue-300">The online meeting link is generated automatically when you confirm this schedule.</p>
+                    </div>
+
+                    {% if appointment.time %}
+                    <button type="submit" class="w-full py-3 btn-success-custom rounded-xl shadow-lg font-bold">Confirm Schedule</button>
+                    {% else %}
+                    <button type="button" disabled class="w-full py-3 bg-gray-600 text-gray-400 rounded-xl font-bold cursor-not-allowed">Complete Acceptance First</button>
+                    {% endif %}
+                </form>
+            </div>
+            {% elif appointment.status in ['Confirmed', 'Completed'] %}
+            <div class="glass-panel p-6 border-l-4 border-green-400">
+                <h3 class="text-xl font-bold text-green-400 mb-4">Schedule Confirmed</h3>
+                <div class="space-y-3">
+                    <div>
+                        <span class="text-gray-400 text-sm block">Time</span>
+                        <span class="text-xl font-bold">{{ appointment.time }}</span>
+                    </div>
+                    {% if appointment.meeting_link %}
+                    <div>
+                        <span class="text-gray-400 text-sm block">Meeting Link</span>
+                        <a href="{{ appointment.meeting_link }}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline break-all">{{ appointment.meeting_link }}</a>
+                    </div>
+                    {% endif %}
+                    {% if appointment.payment_status != 'completed' %}
+                    <p class="text-xs text-yellow-300">The patient can join this room after completing payment.</p>
+                    {% endif %}
+                    <p class="text-xs text-gray-500 mt-2">The schedule is locked.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Column: Medical Actions -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            {% if appointment.status in ['Confirmed', 'Completed'] %}
+                <!-- Reports Section -->
+                <div class="glass-panel p-6">
+                    <h3 class="text-xl font-bold text-purple-400 mb-4">Patient Reports</h3>
+                    {% if reports %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {% for report in reports %}
+                                <div class="bg-white/5 p-3 rounded-lg flex justify-between items-center border border-white/10">
+                                    <div>
+                                        <div class="font-semibold">{{ report.name }}</div>
+                                        <div class="text-xs text-gray-400">{{ report.date }}</div>
+                                    </div>
+                                    <a href="{{ url_for('static', filename='uploads/' + report.filename) }}" target="_blank" rel="noopener noreferrer" class="px-3 py-1 bg-blue-600/20 text-blue-300 rounded hover:bg-blue-600/40 transition text-sm">View</a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-gray-400 italic">No reports uploaded by the patient.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Consultation Status Action -->
+                <div class="glass-panel p-6 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-lg font-bold">Consultation Status</h3>
+                        <p class="text-sm text-gray-400">Mark as completed to enable prescriptions.</p>
+                    </div>
+                    {% if appointment.status != 'Completed' %}
+                    <form method="POST">
+                        <input type="hidden" name="action" value="mark_completed">
+                        <button type="submit" onclick="return confirm('Are you sure you want to mark this consultation as completed? This will enable prescription features.')" class="px-6 py-2 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded-lg shadow-lg transition">Mark Completed</button>
+                    </form>
+                    {% else %}
+                        <span class="px-4 py-2 bg-green-500/20 text-green-400 border border-green-500/50 rounded-lg font-bold">✓ Completed</span>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% if appointment.status == 'Completed' %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Prescribe Medicine -->
+                    <div class="glass-panel p-6">
+                        <h3 class="text-xl font-bold text-blue-400 mb-4">Prescribe Medicine</h3>
+                        <form method="POST" class="space-y-3">
+                            <input type="hidden" name="action" value="prescribe_medicine">
+                            
+                            <input id="medicine-name" type="text" name="medicine_name" class="w-full form-input rounded-lg px-3 py-2" placeholder="Search medicine dataset" list="medicine-options" autocomplete="off" required>
+                            <datalist id="medicine-options"></datalist>
+
+                            <div class="flex gap-2">
+                                <input type="text" name="frequency" class="w-1/2 form-input rounded-lg px-3 py-2" placeholder="Freq (1-0-1)" required>
+                                <input type="number" name="duration" class="w-1/2 form-input rounded-lg px-3 py-2" placeholder="Days" required>
+                            </div>
+                            
+                            <input type="text" name="instructions" class="w-full form-input rounded-lg px-3 py-2" placeholder="Instructions (e.g. After food)">
+                            
+                            <button type="submit" class="w-full py-2 btn-gradient rounded-lg shadow-lg">Add Prescription</button>
+                        </form>
+
+                        <!-- List -->
+                        <div class="mt-4 space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
+                            {% for rx in prescriptions %}
+                                <div class="bg-white/5 p-3 rounded-lg flex justify-between items-center text-sm">
+                                    <div>
+                                        <div class="font-bold text-blue-300">{{ rx.medicine_name }}</div>
+                                        <div class="text-gray-400">{{ rx.frequency }} • {{ rx.duration }} Days</div>
+                                    </div>
+                                    <form action="{{ url_for('delete_prescription', prescription_id=rx._id) }}" method="POST">
+                                        <input type="hidden" name="appointment_id" value="{{ appointment._id }}">
+                                        <button type="submit" onclick="return confirm('Delete this prescription?')" class="text-red-400 hover:text-red-300 font-bold px-2">✕</button>
+                                    </form>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Assign Meal Plan -->
+                    <div class="glass-panel p-6">
+                        <h3 class="text-xl font-bold text-yellow-400 mb-4">Assign Meal Plan</h3>
+                        {% if appointment.meal_plan %}
+                        <div class="mb-4 p-4 bg-white/5 rounded-lg border border-white/10">
+                            <h4 class="text-xs text-gray-400 mb-2 uppercase tracking-wider font-bold">Current Plan</h4>
+                            <p class="text-gray-200 whitespace-pre-wrap text-sm">{{ appointment.meal_plan }}</p>
+                        </div>
+                        {% endif %}
+                        <form method="POST" class="space-y-3">
+                            <input type="hidden" name="action" value="assign_meal">
+                            <label class="block text-sm text-gray-400">Update Plan</label>
+                            <textarea name="meal_plan" class="w-full form-input rounded-lg px-3 py-2 h-48" placeholder="Enter meal plan details...">{{ appointment.meal_plan or 'Breakfast: \n\nLunch: \n\nDinner: ' }}</textarea>
+                            <button type="submit" class="w-full py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold rounded-lg shadow-lg hover:opacity-90 transition">Save Meal Plan</button>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<script>
+const medicineInput = document.getElementById('medicine-name');
+const medicineOptions = document.getElementById('medicine-options');
+let medicineSearch;
+
+medicineInput.addEventListener('input', () => {
+    clearTimeout(medicineSearch);
+    const query = medicineInput.value.trim();
+    if (query.length < 2) {
+        medicineOptions.replaceChildren();
+        return;
+    }
+
+    medicineSearch = setTimeout(async () => {
+        const response = await fetch(`/doctor/medicines/search?q=${encodeURIComponent(query)}`);
+        if (!response.ok) {
+            return;
+        }
+        const medicines = await response.json();
+        medicineOptions.replaceChildren(...medicines.map(medicine => {
+            const option = document.createElement('option');
+            option.value = medicine.name;
+            option.label = medicine.composition || medicine.manufacturer;
+            return option;
+        }));
+    }, 250);
+});
+</script>
+
+</body>
+</html>

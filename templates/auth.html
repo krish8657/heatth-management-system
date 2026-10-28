@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Smart Health - AI Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes float-icon {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.6); }
+        }
+
+        @keyframes slide-in-down {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse-ring {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        body {
+            background: linear-gradient(-45deg, #0f172a, #1e3a5f, #1a4d7a, #0f6b8f);
+            background-size: 400% 400%;
+            animation: gradient-shift 15s ease infinite;
+            min-height: 100vh;
+        }
+
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(79, 172, 254, 0.5);
+            box-shadow: 0 0 20px rgba(79, 172, 254, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-auth {
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .btn-auth::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: left 0.5s ease;
+        }
+
+        .btn-auth:hover::before {
+            left: 100%;
+        }
+
+        .btn-auth:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-auth:active {
+            transform: translateY(-1px);
+        }
+
+        .active-tab {
+            background: rgba(59, 130, 246, 0.8) !important;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            color: white !important;
+        }
+
+        .inactive-tab {
+            background: transparent;
+            color: rgba(255, 255, 255, 0.6);
+            transition: all 0.3s ease;
+        }
+
+        .inactive-tab:hover {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .form-wrapper {
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .toast {
+            animation: slideInRight 0.5s ease-out forwards;
+        }
+
+        @media (max-width: 640px) {
+            .form-container {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+
+    <div id="notification-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3"></div>
+
+    <a href="/" class="absolute top-8 left-8 text-white flex items-center gap-2 hover:text-blue-300 transition-all font-semibold group">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        Back to Home
+    </a>
+
+    <div class="glass-morphism form-container p-8 w-full max-w-[550px] animate__animated animate__fadeInUp" style="animation: slide-in-down 0.8s ease-out;">
+        
+        <!-- Tab Buttons -->
+        <div class="flex gap-2 mb-8 bg-black/20 p-1 rounded-lg">
+            <button id="login-toggle" onclick="showLogin()" class="flex-1 py-3 text-white font-bold rounded-lg z-10 transition-all active-tab">Login</button>
+            <button id="patient-toggle" onclick="showPatient()" class="flex-1 py-3 text-white font-bold rounded-lg z-10 transition-all inactive-tab">Patient</button>
+            <button id="doctor-toggle" onclick="showDoctor()" class="flex-1 py-3 text-white font-bold rounded-lg z-10 transition-all inactive-tab">Doctor</button>
+        </div>
+
+        <!-- Forms Container -->
+        <div class="overflow-hidden">
+            <div id="form-wrapper" class="form-wrapper flex w-[300%]">
+                
+                <!-- 1. Login Form -->
+                <form id="login-form" action="/login" method="POST" class="w-1/3 px-4 space-y-6">
+                    <div class="text-center text-white mb-6">
+                        <h2 class="text-3xl font-bold">Welcome Back</h2>
+                        <p class="text-blue-100/70">Enter your details to access your health portal</p>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <input type="email" name="email" placeholder="Doctor/Patient Email" required
+                            class="w-full input-field rounded-lg px-4 py-3 text-white focus:outline-none">
+                        
+                        <input type="password" name="password" placeholder="Password" required
+                            class="w-full input-field rounded-lg px-4 py-3 text-white focus:outline-none">
+                    </div>
+
+                    <button type="submit" class="w-full btn-auth text-white font-bold py-3 rounded-lg transition-all relative z-10">
+                        Sign In
+                    </button>
+
+                    <!-- New Patient Registration Link -->
+                    <div class="text-center pt-2">
+                        <p class="text-gray-300 text-sm">New here? 
+                            <a href="{{ url_for('register_patient') }}" class="text-green-400 hover:text-green-300 font-semibold transition">
+                                Create an account
+                            </a>
+                        </p>
+                    </div>
+
+                </form>
+
+                <!-- 2. Patient Registration -->
+                <form id="patient-form" action="/register" method="POST" class="w-1/3 px-4 space-y-4">
+                    <input type="hidden" name="role" value="patient">
+                    <div class="text-center text-white mb-6">
+                        <h2 class="text-3xl font-bold">Patient Sign Up</h2>
+                        <p class="text-blue-100/70">Create your personal health account</p>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <input type="text" name="username" placeholder="Full Name" required
+                            class="w-full input-field rounded-lg px-4 py-3 text-white focus:outline-none">
+                        
+                        <input type="email" name="email" placeholder="Email Address" required
+                            class="w-full input-field rounded-lg px-4 py-3 text-white focus:outline-none">
+                        
+                        <input type="password" name="password" placeholder="Create Strong Password" required
+                            class="w-full input-field rounded-lg px-4 py-3 text-white focus:outline-none">
+                    </div>
+
+                    <button type="submit" class="w-full btn-auth text-white font-bold py-3 rounded-lg transition-all relative z-10">
+                        Create Account
+                    </button>
+                </form>
+
+                <!-- 3. Doctor Registration -->
+                <form id="doctor-form" action="/register" method="POST" class="w-1/3 px-4 space-y-4">
+                    <input type="hidden" name="role" value="doctor">
+                    <div class="text-center text-white mb-6">
+                        <h2 class="text-3xl font-bold">Doctor Join</h2>
+                        <p class="text-blue-100/70">Register to manage patients & appointments</p>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <input type="text" name="username" placeholder="Dr. Full Name" required
+                            class="w-full input-field rounded-lg px-4 py-3 text-white focus:outline-none">
+                        
+                        <input type="email" name="email" placeholder="Professional Email" required
+                            class="w-full input-field rounded-lg px-4 py-3 text-white focus:outline-none">
+                        
+                        <input type="text" name="specialty" placeholder="Specialty (e.g. Cardiology)" required
+                            class="w-full input-field rounded-lg px-4 py-3 text-white focus:outline-none">
+
+                        <input type="password" name="password" placeholder="Create Password" required
+                            class="w-full input-field rounded-lg px-4 py-3 text-white focus:outline-none">
+                    </div>
+
+                    <button type="submit" class="w-full btn-auth text-white font-bold py-3 rounded-lg transition-all relative z-10">
+                        Register as Doctor
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const wrapper = document.getElementById('form-wrapper');
+        const loginToggle = document.getElementById('login-toggle');
+        const patientToggle = document.getElementById('patient-toggle');
+        const doctorToggle = document.getElementById('doctor-toggle');
+
+        function showLogin() {
+            wrapper.style.transform = "translateX(0%)";
+            loginToggle.classList.add('active-tab');
+            loginToggle.classList.remove('inactive-tab');
+            patientToggle.classList.remove('active-tab');
+            patientToggle.classList.add('inactive-tab');
+            doctorToggle.classList.remove('active-tab');
+            doctorToggle.classList.add('inactive-tab');
+        }
+
+        function showPatient() {
+            wrapper.style.transform = "translateX(-33.33%)";
+            patientToggle.classList.add('active-tab');
+            patientToggle.classList.remove('inactive-tab');
+            loginToggle.classList.remove('active-tab');
+            loginToggle.classList.add('inactive-tab');
+            doctorToggle.classList.remove('active-tab');
+            doctorToggle.classList.add('inactive-tab');
+        }
+
+        function showDoctor() {
+            wrapper.style.transform = "translateX(-66.66%)";
+            doctorToggle.classList.add('active-tab');
+            doctorToggle.classList.remove('inactive-tab');
+            loginToggle.classList.remove('active-tab');
+            loginToggle.classList.add('inactive-tab');
+            patientToggle.classList.remove('active-tab');
+            patientToggle.classList.add('inactive-tab');
+        }
+
+        // Toast notification
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('notification-container');
+            const toast = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+            const icon = type === 'success' ? '✓' : '✕';
+
+            toast.className = `${bgColor} toast text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 font-semibold animate__animated animate__slideInRight`;
+            toast.innerHTML = `
+                <span class="text-lg">${icon}</span>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            // Auto-remove after 4 seconds
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        }
+
+        // --- CHECK FOR FLASH MESSAGES FROM FLASK ---
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              showToast("{{ message }}", "{{ 'success' if category == 'success' else 'error' }}");
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+    </script>
+</body>
+</html>

@@ -1,0 +1,1744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Smart Health System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        :root {
+            --primary-color: #075061; /* Dark Blue */
+            --secondary-color: #228693; /* Medium Teal */
+            --accent-color: #83C8D1; /* Light Teal */
+            --darkest: #042434; /* Very Dark Blue */
+            --bg-light: #BFDDDE; /* Light Blue */
+            --text-main: #075061;
+            --text-light: #ffffff;
+            --glass-bg: rgba(7, 80, 97, 0.1);
+            --glass-bg-strong: rgba(7, 80, 97, 0.2);
+            --shadow-color: rgba(34, 134, 147, 0.15);
+        }
+
+        /* Futuristic Animations */
+        @keyframes floatIn {
+            0% { 
+                opacity: 0; 
+                transform: translateY(30px); 
+            }
+            100% { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        @keyframes slideInFromLeft {
+            0% { 
+                opacity: 0; 
+                transform: translateX(-50px); 
+            }
+            100% { 
+                opacity: 1; 
+                transform: translateX(0); 
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% { 
+                box-shadow: 0 0 5px rgba(22, 156, 129, 0.3), inset 0 0 20px rgba(22, 156, 129, 0.1); 
+            }
+            50% { 
+                box-shadow: 0 0 25px rgba(22, 156, 129, 0.6), inset 0 0 30px rgba(22, 156, 129, 0.2); 
+            }
+        }
+
+        @keyframes shimmer {
+            0%, 100% { 
+                background-position: 0% 0%; 
+            }
+            50% { 
+                background-position: 100% 100%; 
+            }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { 
+                box-shadow: 0 0 20px rgba(22, 156, 129, 0.3); 
+            }
+            50% { 
+                box-shadow: 0 0 40px rgba(22, 156, 129, 0.6); 
+            }
+        }
+
+        @keyframes rotate-360 {
+            0% { 
+                transform: rotate(0deg); 
+            }
+            100% { 
+                transform: rotate(360deg); 
+            }
+        }
+
+        @keyframes gradient-shift {
+            0% { 
+                background-position: 0% 50%; 
+            }
+            50% { 
+                background-position: 100% 50%; 
+            }
+            100% { 
+                background-position: 0% 50%; 
+            }
+        }
+
+        @keyframes bounce-subtle {
+            0%, 100% { 
+                transform: translateY(0); 
+            }
+            50% { 
+                transform: translateY(-10px); 
+            }
+        }
+
+        @keyframes pop-in {
+            0% { 
+                opacity: 0; 
+                transform: scale(0.8); 
+            }
+            50% { 
+                opacity: 1; 
+                transform: scale(1.05); 
+            }
+            100% { 
+                opacity: 1; 
+                transform: scale(1); 
+            }
+        }
+
+        .glass-input { 
+            background: rgba(191, 221, 222, 0.4);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(131, 200, 209, 0.3);
+            color: #075061;
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        .glass-input:focus { 
+            outline: none;
+            border-color: #228693;
+            box-shadow: 0 0 15px rgba(34, 134, 147, 0.3);
+            background: rgba(191, 221, 222, 0.6);
+        }
+        .sidebar-section-title { color: #E4F9D1; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 5px; margin-top: 25px; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #BFDDDE 0%, rgba(131, 200, 209, 0.3) 50%, rgba(7, 80, 97, 0.05) 100%);
+            color: var(--text-main);
+            padding-top: 80px; /* Space for the fixed navbar */
+            min-height: 100vh;
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(135deg, rgba(7, 80, 97, 0.7), rgba(34, 134, 147, 0.7));
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-sizing: border-box;
+            animation: slideInFromLeft 0.6s ease-out;
+            box-shadow: 0 8px 32px rgba(7, 80, 97, 0.2);
+            border-bottom: 1px solid rgba(131, 200, 209, 0.2);
+        }
+
+        nav .logo {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: white;
+            text-decoration: none;
+            animation: pop-in 0.6s ease-out;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        nav .logo:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        nav .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav .nav-links a {
+            color: white;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: all 0.3s;
+            position: relative;
+            padding-bottom: 5px;
+        }
+
+        nav .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: rgba(228, 249, 209, 0.8);
+            transition: width 0.3s ease;
+        }
+
+        nav .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        nav .nav-links a:hover {
+            color: #E4F9D1;
+            transform: translateY(-3px);
+        }
+
+        /* Hamburger Menu (Mobile) */
+        .hamburger {
+            display: none;
+            cursor: pointer;
+            color: var(--primary-color);
+        }
+
+        /* User Icon Styles */
+        .user-icon-btn {
+            cursor: pointer;
+            margin-left: 1.5rem;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); /* Blue to Teal */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            animation: pop-in 0.6s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .user-icon-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle, rgba(228, 249, 209, 0.5) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        .user-icon-btn:hover {
+            transform: scale(1.15) rotate(5deg);
+            box-shadow: 0 8px 25px rgba(22, 156, 129, 0.6);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -350px;
+            width: 300px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--primary-color) 0%, #003d52 100%);
+            backdrop-filter: blur(20px);
+            box-shadow: -5px 0 25px rgba(0,0,0,0.8);
+            z-index: 2000;
+            transition: right 0.5s cubic-bezier(0.77, 0, 0.175, 1);
+            padding: 2rem;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .sidebar.active {
+            right: 0;
+            animation: slideInFromLeft 0.5s ease-out;
+        }
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 1rem;
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .user-info {
+            margin-bottom: 2rem;
+        }
+        .user-info h3 {
+            margin: 0 0 0.5rem 0;
+            color: var(--accent-color);
+        }
+        .user-info p {
+            margin: 0;
+            color: #D2F0F0;
+            font-size: 0.9rem;
+        }
+        .sidebar-links a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            transition: padding-left 0.3s;
+        }
+        .sidebar-links a:hover {
+            padding-left: 10px;
+            color: var(--accent-color);
+        }
+        .logout-btn {
+            margin-top: auto;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .logout-btn:hover { background: rgba(255,255,255,0.2); }
+        
+        /* New Action Buttons in Sidebar */
+        .action-btn {
+            display: flex; align-items: center; gap: 10px;
+            width: 100%; padding: 12px; margin-bottom: 12px;
+            border-radius: 12px; text-decoration: none; color: white; font-weight: 600;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: none; cursor: pointer; text-align: left; font-size: 0.95rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: left 0.5s ease;
+            z-index: 0;
+        }
+
+        .action-btn:hover::before {
+            left: 100%;
+        }
+
+        .action-btn:hover { 
+            transform: translateY(-4px) scale(1.05); 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        .edit-btn { background: linear-gradient(135deg, #169C81, #0ba360); } 
+        .upload-btn { background: linear-gradient(135deg, #005D7E, #169C81); } 
+        .action-icon { font-size: 1.2rem; position: relative; z-index: 1; }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 1rem;
+        }
+
+        .welcome-banner {
+            background: linear-gradient(135deg, #169C81, #005D7E);
+            backdrop-filter: blur(10px);
+            border: none;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(22, 156, 129, 0.3);
+            text-align: center;
+            margin-bottom: 2.5rem;
+            color: white;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .welcome-banner h1 {
+            color: #E4F9D1;
+            margin-bottom: 0.5rem;
+            text-shadow: none;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .features .feature-card:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .features .feature-card:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .features .feature-card:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .articles-grid .article-card:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .articles-grid .article-card:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .articles-grid .article-card:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .feature-card {
+            background: rgba(191, 221, 222, 0.3);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(131, 200, 209, 0.4);
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(7, 80, 97, 0.1);
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            color: var(--text-main);
+            animation: floatIn 0.6s ease-out both;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(34, 134, 147, 0.15) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+            animation: rotate-360 3s linear infinite;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            background: rgba(131, 200, 209, 0.2);
+            border-color: rgba(131, 200, 209, 0.6);
+            box-shadow: 0 15px 40px rgba(34, 134, 147, 0.2);
+        }
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(22, 156, 129, 0.25);
+            background: linear-gradient(135deg, #ffffff 0%, rgba(228, 249, 209, 0.3) 100%);
+            border-color: #169C81;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        .feature-card h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover h3 {
+            color: var(--secondary-color);
+            text-shadow: 0 0 10px rgba(22, 156, 129, 0.3);
+        }
+
+        .feature-card p {
+            font-size: 0.9rem;
+            color: #555;
+            line-height: 1.5;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-card .cta {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.6rem 1.2rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); /* Blue to Teal */
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card .cta::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .feature-card .cta:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .feature-card .cta:hover {
+            transform: translateY(-3px) scale(1.08);
+            box-shadow: 0 15px 35px rgba(22, 156, 129, 0.5);
+            text-shadow: 0 0 5px rgba(0, 93, 126, 0.3);
+        }
+
+        .feature-card .cta.disabled {
+            background: #aaa;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        /* Overlay for sidebar */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1500;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* --- Mobile Responsiveness --- */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: rgba(15, 32, 39, 0.98);
+                backdrop-filter: blur(20px);
+                flex-direction: column;
+                align-items: center;
+                padding: 1rem 0;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .nav-links a {
+                margin: 0.5rem 0;
+                width: 80%;
+                text-align: center;
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .sidebar {
+                width: 85%; /* Wider sidebar on mobile */
+                right: -100%;
+            }
+            
+            .user-icon-btn {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
+            z-index: 3000; display: none; justify-content: center; align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            width: 90%; max-width: 500px; position: relative;
+            background: white; border: 1px solid #D2F0F0;
+            border-radius: 20px; padding: 2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            animation: pop-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .close-modal {
+            position: absolute; top: 15px; right: 20px; font-size: 1.5rem; cursor: pointer; color: #005D7E; transition: all 0.3s;
+        }
+        .close-modal:hover { 
+            color: #169C81; 
+            transform: rotate(90deg) scale(1.2);
+        }
+
+        /* --- New Enhanced UI Styles --- */
+        
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, rgba(7, 80, 97, 0.3), rgba(34, 134, 147, 0.25), rgba(131, 200, 209, 0.2));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            color: #075061;
+            padding: 3rem 2rem;
+            border-radius: 24px;
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 20px 50px rgba(7, 80, 97, 0.15), inset 0 0 40px rgba(191, 221, 222, 0.2);
+            animation: floatIn 0.8s ease-out;
+            border: 1px solid rgba(131, 200, 209, 0.3);
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(22, 156, 129, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        .hero-content {
+            max-width: 600px;
+            z-index: 2;
+            animation: slideInFromLeft 0.8s ease-out;
+        }
+        
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+            color: #E4F9D1;
+            animation: floatIn 1s ease-out 0.2s both;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            color: #D2F0F0;
+            animation: floatIn 1s ease-out 0.4s both;
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            margin-bottom: 1.5rem;
+            margin-top: 3rem;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #005D7E;
+        }
+        
+        .section-link {
+            color: #169C81;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .section-link:hover { text-decoration: underline; }
+
+        /* Articles Grid */
+        .articles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .article-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid #D2F0F0;
+            animation: floatIn 0.7s ease-out both;
+            position: relative;
+        }
+        .article-card:hover { 
+            transform: translateY(-10px) scale(1.02); 
+            box-shadow: 0 20px 40px rgba(22, 156, 129, 0.25);
+            border-color: #169C81;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        
+        .article-img {
+            height: 180px;
+            width: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+        
+        .article-card:hover .article-img {
+            transform: scale(1.1) rotate(1deg);
+        }
+        
+        .article-content { padding: 1.5rem; }
+        .article-tag { font-size: 0.75rem; color: #169C81; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; display: block; }
+        .article-title { font-size: 1.1rem; font-weight: 700; color: #005D7E; margin-bottom: 0.5rem; }
+        .article-excerpt { font-size: 0.9rem; color: #666; line-height: 1.5; }
+
+        /* Promo Banner */
+        .promo-banner {
+            background: linear-gradient(135deg, #169C81 0%, #005D7E 100%);
+            background-size: 200% 200%;
+            border-radius: 20px;
+            padding: 2.5rem;
+            color: white;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            margin: 3rem 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0, 93, 126, 0.2);
+            animation: gradient-shift 6s ease infinite, floatIn 0.8s ease-out 0.3s both;
+        }
+
+        .promo-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(228, 249, 209, 0.1) 0%, transparent 70%);
+            animation: rotate-360 15s linear infinite;
+        }
+
+        .promo-content { 
+            z-index: 2; 
+            max-width: 600px;
+            animation: slideInFromLeft 0.8s ease-out 0.4s both;
+        }
+        .promo-badge { 
+            background: #E4F9D1; 
+            color: #005D7E; 
+            padding: 0.4rem 1rem; 
+            border-radius: 20px; 
+            font-weight: bold; 
+            font-size: 0.8rem; 
+            margin-bottom: 1rem; 
+            display: inline-block;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        /* Footer */
+        footer {
+            background: linear-gradient(180deg, #005D7E 0%, #003d52 100%);
+            color: white;
+            padding: 4rem 1rem 2rem;
+            margin-top: 5rem;
+            border-top: 5px solid #169C81;
+            animation: floatIn 0.8s ease-out 0.5s both;
+        }
+        .footer-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 3rem;
+        }
+        .footer-col h4 { color: #E4F9D1; margin-bottom: 1.5rem; font-size: 1.2rem; font-weight: bold; }
+        .footer-col a { color: #D2F0F0; display: block; margin-bottom: 0.8rem; text-decoration: none; font-size: 0.95rem; transition: 0.2s; }
+        .footer-col a:hover { color: white; transform: translateX(5px); }
+
+        /* ========== NEW COMPONENTS ========== */
+
+        /* Video Card Styles */
+        .video-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid #D2F0F0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: floatIn 0.7s ease-out both;
+        }
+
+        .video-card:hover {
+            transform: translateY(-12px) scale(1.03);
+            box-shadow: 0 25px 50px rgba(22, 156, 129, 0.3);
+            border-color: #169C81;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            border-bottom: 2px solid #E4F9D1;
+        }
+
+        .video-container iframe {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .video-info {
+            padding: 1.5rem;
+        }
+
+        .video-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #169C81, #005D7E);
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        .video-title {
+            color: #005D7E;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .video-card:hover .video-title {
+            color: #169C81;
+            text-shadow: 0 0 10px rgba(22, 156, 129, 0.3);
+        }
+
+        .video-desc {
+            color: #666;
+            font-size: 0.9rem;
+            margin: 0.8rem 0;
+            line-height: 1.5;
+        }
+
+        .video-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #E4F9D1;
+            font-size: 0.85rem;
+            color: #999;
+        }
+
+        /* Health Statistics Cards */
+        .stat-card {
+            background: rgba(191, 221, 222, 0.35);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 15px;
+            padding: 1rem;
+            border: 1px solid rgba(131, 200, 209, 0.4);
+            box-shadow: 0 8px 32px rgba(7, 80, 97, 0.1);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: floatIn 0.6s ease-out both;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(34, 134, 147, 0.15) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+            animation: rotate-360 3s linear infinite;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 20px 50px rgba(34, 134, 147, 0.25);
+            border-color: #83C8D1;
+            background: rgba(131, 200, 209, 0.25);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 0.8rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-card:hover .stat-icon {
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        .stat-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #005D7E;
+            margin-bottom: 0.2rem;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #169C81;
+            font-weight: 600;
+        }
+
+        .stat-unit {
+            font-size: 0.7rem;
+            color: #999;
+            margin-top: 0.1rem;
+        }
+
+        .stat-trend {
+            font-size: 0.75rem;
+            color: #169C81;
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid #E4F9D1;
+            font-weight: 600;
+        }
+
+        /* AI Assistant Container */
+        .ai-assistant-container {
+            background: linear-gradient(135deg, #005D7E 0%, #169C81 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            color: white;
+            box-shadow: 0 15px 40px rgba(22, 156, 129, 0.3);
+            animation: floatIn 0.8s ease-out;
+            animation-delay: 0.2s;
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .ai-avatar {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            animation: bounce-subtle 2s ease-in-out infinite;
+        }
+
+        .ai-greeting h3 {
+            margin: 0;
+            font-size: 1.5rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .ai-greeting p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .ai-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .ai-feature-item {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .ai-feature-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .feature-icon {
+            font-size: 1.5rem;
+        }
+
+        .ai-action-btn {
+            background: white;
+            color: #005D7E;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .ai-action-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Appointments Container */
+        .appointments-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .appointment-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid #E4F9D1;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: floatIn 0.6s ease-out both;
+        }
+
+        .appointment-card:hover {
+            transform: translateX(10px);
+            box-shadow: 0 15px 35px rgba(22, 156, 129, 0.2);
+            border-color: #169C81;
+        }
+
+        .appointment-icon {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #169C81, #005D7E);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .appointment-details {
+            flex-grow: 1;
+        }
+
+        .appointment-details h4 {
+            margin: 0 0 0.5rem 0;
+            color: #005D7E;
+            font-size: 1.1rem;
+        }
+
+        .appointment-details p {
+            margin: 0.3rem 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .appointment-action {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            background: linear-gradient(135deg, #169C81, #005D7E);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-small:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(22, 156, 129, 0.4);
+        }
+
+        .appointment-card.empty-state {
+            justify-content: center;
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+
+        .appointment-card.empty-state p {
+            margin: 0.5rem 0;
+            color: #999;
+        }
+
+        /* Health Tips Carousel */
+        .tips-carousel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .tip-card {
+            background: linear-gradient(135deg, rgba(0, 93, 126, 0.05), rgba(22, 156, 129, 0.05));
+            border: 2px solid #E4F9D1;
+            border-radius: 15px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: floatIn 0.6s ease-out both;
+        }
+
+        .tip-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(22, 156, 129, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tip-card:hover::before {
+            opacity: 1;
+            animation: rotate-360 3s linear infinite;
+        }
+
+        .tip-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(22, 156, 129, 0.2);
+            border-color: #169C81;
+            background: white;
+        }
+
+        .tip-number {
+            position: relative;
+            z-index: 1;
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #005D7E, #169C81);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .tip-card h4 {
+            color: #005D7E;
+            margin: 1rem 0 0.8rem 0;
+            font-size: 1.2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tip-card:hover h4 {
+            color: #169C81;
+            text-shadow: 0 0 10px rgba(22, 156, 129, 0.3);
+        }
+
+        .tip-card p {
+            color: #666;
+            line-height: 1.6;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Responsive adjustments for new components */
+        @media (max-width: 768px) {
+            .ai-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .ai-features {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .appointment-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .appointment-details {
+                text-align: center;
+            }
+
+            .appointment-action {
+                justify-content: center;
+                width: 100%;
+            }
+
+            .stat-card {
+                text-align: center;
+            }
+
+            .video-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Overlay for sidebar -->
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <!-- User Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Profile</h2>
+            <button class="close-btn" onclick="toggleSidebar()">&times;</button>
+        </div>
+        
+        {% if logged_in %}
+        <div class="user-info">
+            <h3>{{ session.username }}</h3>
+            <p style="font-size: 0.8rem; color: #888;">ID: {{ session.user_id }}</p>
+            {% if user.age %}
+            <p style="font-size: 0.8rem; color: #aaa; margin-top: 5px;">{{ user.age }} Years • {{ user.gender }}</p>
+            {% endif %}
+        </div>
+        
+        <div class="sidebar-section-title">Quick Actions</div>
+        <button onclick="openModal('editProfileModal')" class="action-btn edit-btn">
+            <span class="action-icon">✏️</span> Edit Profile
+        </button>
+        <button onclick="openModal('uploadReportModal')" class="action-btn upload-btn">
+            <span class="action-icon">📂</span> Upload Reports
+        </button>
+
+        <div class="sidebar-links" style="margin-top: 20px;">
+            <a href="#">Settings</a>
+        </div>
+        <a href="/logout" class="logout-btn" style="margin-top: 20px;">Logout</a>
+        {% else %}
+        <div class="user-info">
+            <p>Please login to view your profile.</p>
+        </div>
+        <a href="/auth" class="logout-btn" style="background: var(--accent-color);">Login Now</a>
+        {% endif %}
+    </div>
+
+    <nav>
+        <a href="/" class="logo">SmartHealth</a>
+        
+        <!-- Hamburger Icon -->
+        <div class="hamburger" onclick="toggleMobileMenu()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </div>
+
+        <div class="nav-links" id="navLinks">
+            <a href="/">Home</a>
+            <a href="/my_health_records">Records</a>
+            <a href="/inbox">Inbox</a>
+            {% if not logged_in %}
+                <a href="/auth" class="auth-btn">Login / Register</a>
+            {% else %}
+                <!-- User Icon Trigger -->
+                <div class="user-icon-btn" onclick="toggleSidebar()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E4F9D1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages-container mb-8 space-y-3">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-message-{{ category }} animate__animated animate__slideInDown" style="animation: slideInDown 0.5s ease-out;">
+                            <span class="flash-icon">{{ '✓' if category == 'success' else '❌' if category == 'error' else 'ℹ' }}</span>
+                            <div class="flash-text">{{ message }}</div>
+                            <button onclick="this.parentElement.classList.add('hide-message'); setTimeout(() => this.parentElement.remove(), 300);" class="flash-close">×</button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Enhanced Hero Section -->
+        <div class="hero-section animate__animated animate__fadeIn">
+            <div class="hero-content">
+            {% if logged_in %}
+                <h1 class="hero-title">Welcome back, {{ session.username }}!</h1>
+                <p class="hero-subtitle">Your personal health dashboard is ready. Track your vitals, manage appointments, and stay healthy.</p>
+                <div class="flex gap-4">
+                    <a href="/inbox" class="bg-[#E4F9D1] text-[#005D7E] px-6 py-3 rounded-xl font-bold hover:bg-white transition shadow-lg">Check Inbox</a>
+                    <a href="/my_health_records" class="border border-[#E4F9D1] text-[#E4F9D1] px-6 py-3 rounded-xl font-bold hover:bg-[#E4F9D1]/10 transition">My Records</a>
+                </div>
+            {% else %}
+                <h1 class="hero-title">Your Health Management Companion</h1>
+                <p class="hero-subtitle">Book doctors, manage appointments, and keep your health records secure.</p>
+                <a href="/auth" class="bg-[#E4F9D1] text-[#005D7E] px-8 py-4 rounded-xl font-bold hover:bg-white transition shadow-lg inline-block">Get Started</a>
+            {% endif %}
+            </div>
+            <!-- Decorative Element -->
+            <div class="hidden md:block text-9xl opacity-20 select-none">🩺</div>
+        </div>
+
+        <!-- Quick Actions (Original Features) -->
+        <div class="section-header">
+            <h2 class="section-title">Quick Actions</h2>
+        </div>
+        <div class="features">
+            <div class="feature-card">
+                <h3>Find a Doctor</h3>
+                <p>Browse our list of verified doctors and view their profiles and specialties.</p>
+                {% if logged_in %}
+                <a href="/doctors" class="cta">View Doctors</a>
+                {% else %}
+                <span class="cta disabled">Login to View</span>
+                {% endif %}
+            </div>
+
+            <div class="feature-card">
+                <h3>Lab Tests</h3>
+                <p>Book diagnostic tests, full body checkups, and view reports online.</p>
+                {% if logged_in %}
+                <a href="/lab_tests" class="cta">View Lab Tests</a>
+                {% else %}
+                <span class="cta disabled">Login to View</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Advertisement / Promo Banner -->
+        <div class="promo-banner animate__animated animate__fadeInUp">
+            <div class="promo-content">
+                <span class="promo-badge">LIMITED OFFER</span>
+                <h2 class="text-3xl font-bold mb-2">Full Body Checkup - 50% OFF</h2>
+                <p class="text-[#D2F0F0] mb-6">Get a comprehensive health screening including 70+ parameters. Valid until this weekend.</p>
+                <a href="/lab_tests" class="bg-white text-[#005D7E] px-6 py-3 rounded-xl font-bold hover:bg-[#F1F9FD] transition shadow-lg">Book Now</a>
+            </div>
+            <div class="text-9xl opacity-20 hidden md:block">🔬</div>
+        </div>
+
+        <!-- Health Articles Section -->
+        <div class="section-header">
+            <h2 class="section-title">Latest Health Insights</h2>
+            <a href="/health_articles" class="section-link">View All Articles →</a>
+        </div>
+        <div class="articles-grid">
+            <!-- Article 1 -->
+            <div class="article-card">
+                <img src="https://images.unsplash.com/photo-1505751172876-fa1923c5c528?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Health" class="article-img">
+                <div class="article-content">
+                    <span class="article-tag">Wellness</span>
+                    <h3 class="article-title">10 Tips for a Healthy Heart</h3>
+                    <p class="article-excerpt">Discover simple lifestyle changes that can significantly improve your cardiovascular health today.</p>
+                </div>
+            </div>
+            <!-- Article 2 -->
+            <div class="article-card">
+                <img src="https://images.unsplash.com/photo-1511688878353-3a2f5be94cd7?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Nutrition" class="article-img">
+                <div class="article-content">
+                    <span class="article-tag">Nutrition</span>
+                    <h3 class="article-title">Superfoods You Need</h3>
+                    <p class="article-excerpt">Boost your immunity with these nutrient-rich foods that should be part of your daily diet.</p>
+                </div>
+            </div>
+            <!-- Article 3 -->
+            <div class="article-card">
+                <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Fitness" class="article-img">
+                <div class="article-content">
+                    <span class="article-tag">Fitness</span>
+                    <h3 class="article-title">Yoga for Mental Peace</h3>
+                    <p class="article-excerpt">Learn how 15 minutes of daily yoga can reduce stress and improve your mental clarity.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Featured Videos Section -->
+        <div class="section-header">
+            <h2 class="section-title">📺 Featured Medical Videos</h2>
+            <a href="#" class="section-link">Watch More →</a>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            <!-- Video 1: Understanding Diabetes -->
+            <div class="video-card group">
+                <div class="video-container">
+                    <iframe width="100%" height="220" src="https://www.youtube.com/embed/mUI7HgtY9nE?modestbranding=1" title="Understanding Diabetes" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="rounded-xl"></iframe>
+                </div>
+                <div class="video-info">
+                    <div class="video-badge">🔬 Nutrition</div>
+                    <h4 class="video-title">Understanding Diabetes Management</h4>
+                    <p class="video-desc">Learn about diabetes causes, symptoms, and effective management strategies for better health.</p>
+                    <div class="video-meta">
+                        <span class="video-duration">⏱️ 12:45</span>
+                        <span class="video-views">👁️ 245K views</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video 2: First Aid Basics -->
+            <div class="video-card group">
+                <div class="video-container">
+                    <iframe width="100%" height="220" src="https://www.youtube.com/embed/Kp70_UvjfTs?modestbranding=1" title="First Aid Basics" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="rounded-xl"></iframe>
+                </div>
+                <div class="video-info">
+                    <div class="video-badge">🩹 Emergency</div>
+                    <h4 class="video-title">Essential First Aid Techniques</h4>
+                    <p class="video-desc">Master life-saving first aid skills that everyone should know for emergency situations.</p>
+                    <div class="video-meta">
+                        <span class="video-duration">⏱️ 15:30</span>
+                        <span class="video-views">👁️ 512K views</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video 3: Mental Health -->
+            <div class="video-card group">
+                <div class="video-container">
+                    <iframe width="100%" height="220" src="https://www.youtube.com/embed/z-IR48eb7gE?modestbranding=1" title="Mental Health Wellness" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="rounded-xl"></iframe>
+                </div>
+                <div class="video-info">
+                    <div class="video-badge">🧠 Wellness</div>
+                    <h4 class="video-title">Mental Health & Stress Management</h4>
+                    <p class="video-desc">Discover practical techniques to manage stress and improve your mental wellbeing daily.</p>
+                    <div class="video-meta">
+                        <span class="video-duration">⏱️ 18:15</span>
+                        <span class="video-views">👁️ 389K views</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Health Statistics Dashboard -->
+        <div class="section-header">
+            <h2 class="section-title">⚡ Your Health Metrics</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #FF6B6B, #FF8E8E);">
+                    ❤️
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{% if logged_in %}72{% else %}--{% endif %}</div>
+                    <div class="stat-label">Heart Rate</div>
+                    <div class="stat-unit">bpm</div>
+                </div>
+                <div class="stat-trend">↓ 3% from last week</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #4ECDC4, #44A5C2);">
+                    💧
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{% if logged_in %}98.6{% else %}--{% endif %}</div>
+                    <div class="stat-label">Body Temp</div>
+                    <div class="stat-unit">°F</div>
+                </div>
+                <div class="stat-trend">✓ Normal</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #FFD93D, #FFA500);">
+                    ⚡
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{% if logged_in %}5,240{% else %}--{% endif %}</div>
+                    <div class="stat-label">Steps Today</div>
+                    <div class="stat-unit">steps</div>
+                </div>
+                <div class="stat-trend">📈 52% towards goal</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #95E1D3, #6BCB77);">
+                    😴
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{% if logged_in %}7.5{% else %}--{% endif %}</div>
+                    <div class="stat-label">Sleep Last Night</div>
+                    <div class="stat-unit">hours</div>
+                </div>
+                <div class="stat-trend">✓ Good</div>
+            </div>
+        </div>
+
+        <!-- AI Assistant Section -->
+        <div class="section-header">
+            <h2 class="section-title">🤖 AI Health Assistant</h2>
+            <a href="#" class="section-link">Chat with AI →</a>
+        </div>
+        <div class="ai-assistant-container mb-12">
+            <div class="ai-header">
+                <div class="ai-avatar">🤖</div>
+                <div class="ai-greeting">
+                    <h3>SmartHealth AI Assistant</h3>
+                    <p>Your personalized health companion powered by artificial intelligence</p>
+                </div>
+            </div>
+            <div class="ai-features">
+                <div class="ai-feature-item">
+                    <span class="feature-icon">💬</span>
+                    <span>Ask Health Questions</span>
+                </div>
+                <div class="ai-feature-item">
+                    <span class="feature-icon">🔍</span>
+                    <span>Symptom Analysis</span>
+                </div>
+                <div class="ai-feature-item">
+                    <span class="feature-icon">💊</span>
+                    <span>Medicine Info</span>
+                </div>
+                <div class="ai-feature-item">
+                    <span class="feature-icon">📊</span>
+                    <span>Health Tracking</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Health Tips Carousel -->
+        <div class="section-header">
+            <h2 class="section-title">💡 Daily Health Tips</h2>
+            <a href="/health_tips" class="section-link">More Tips →</a>
+        </div>
+        <div class="tips-carousel mb-12">
+            <div class="tip-card" style="animation: floatIn 0.6s ease-out 0s;">
+                <div class="tip-number">1</div>
+                <h4>🥗 Eat Balanced Diet</h4>
+                <p>Include fruits, vegetables, and whole grains in your daily meals for optimal nutrition.</p>
+            </div>
+            <div class="tip-card" style="animation: floatIn 0.6s ease-out 0.1s;">
+                <div class="tip-number">2</div>
+                <h4>💪 Stay Active</h4>
+                <p>Aim for at least 30 minutes of moderate exercise every day to boost your energy and health.</p>
+            </div>
+            <div class="tip-card" style="animation: floatIn 0.6s ease-out 0.2s;">
+                <div class="tip-number">3</div>
+                <h4>💤 Get Enough Sleep</h4>
+                <p>Maintain a consistent sleep schedule with 7-8 hours of quality sleep each night.</p>
+            </div>
+            <div class="tip-card" style="animation: floatIn 0.6s ease-out 0.3s;">
+                <div class="tip-number">4</div>
+                <h4>💧 Stay Hydrated</h4>
+                <p>Drink at least 8 glasses of water daily to keep your body functioning optimally.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h4>SmartHealth AI</h4>
+                <p class="text-[#D2F0F0] text-sm leading-relaxed">Your trusted partner in digital healthcare. Connecting patients with doctors and providing AI-driven health insights.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <a href="/doctors">Find a Doctor</a>
+                    <a href="/lab_tests">Lab Tests</a>
+                <a href="/auth">Login / Register</a>
+            </div>
+            <div class="footer-col">
+                <h4>Contact Us</h4>
+                <a href="#">support@smarthealth.ai</a>
+                <a href="#">+91 98765 43210</a>
+                <a href="#">123 Health Avenue, Tech City</a>
+            </div>
+        </div>
+        <div class="text-center mt-10 pt-6 border-t border-[#169C81] text-[#D2F0F0] text-sm">
+            &copy; 2026 Smart Health System. All rights reserved.
+        </div>
+    </footer>
+
+    <!-- Edit Profile Modal -->
+    <div id="editProfileModal" class="modal-overlay">
+        <div class="modal-content animate__animated animate__zoomIn">
+            <span class="close-modal" onclick="closeModal('editProfileModal')">&times;</span>
+            <h2 class="text-2xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-[#005D7E] to-[#169C81]">Edit Profile</h2>
+            
+            <form action="/update_profile" method="POST">
+                <label class="text-xs text-gray-500 block mb-1">Full Name</label>
+                <input type="text" name="name" value="{{ user.name or user.username }}" class="glass-input" placeholder="Full Name">
+                
+                <div class="flex gap-4 mb-2">
+                    <div class="w-1/2">
+                        <label class="text-xs text-gray-500 block mb-1">Age</label>
+                        <input type="number" name="age" value="{{ user.age }}" class="glass-input" placeholder="Age">
+                    </div>
+                    <div class="w-1/2">
+                        <label class="text-xs text-gray-500 block mb-1">Gender</label>
+                        <select name="gender" class="glass-input bg-white">
+                            <option value="Male" {% if user.gender == 'Male' %}selected{% endif %}>Male</option>
+                            <option value="Female" {% if user.gender == 'Female' %}selected{% endif %}>Female</option>
+                            <option value="Other" {% if user.gender == 'Other' %}selected{% endif %}>Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <label class="text-xs text-gray-500 block mb-1">Blood Group</label>
+                <input type="text" name="blood_group" value="{{ user.blood_group }}" class="glass-input" placeholder="e.g. O+">
+                
+                <label class="text-xs text-gray-500 block mb-1">Chronic Conditions</label>
+                <textarea name="chronic_conditions" rows="2" class="glass-input" placeholder="e.g. Diabetes...">{{ user.chronic_conditions }}</textarea>
+                
+                <label class="text-xs text-gray-500 block mb-1">Allergies</label>
+                <input type="text" name="allergies" value="{{ user.allergies }}" class="glass-input" placeholder="e.g. Peanuts">
+                
+                <button type="submit" class="w-full py-3 mt-4 rounded-xl font-bold text-white shadow-lg hover:scale-[1.02] transition" style="background: linear-gradient(135deg, #005D7E, #169C81);">
+                    Save Changes
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Upload Report Modal -->
+    <div id="uploadReportModal" class="modal-overlay">
+        <div class="modal-content animate__animated animate__zoomIn">
+            <span class="close-modal" onclick="closeModal('uploadReportModal')">&times;</span>
+            <h2 class="text-2xl font-bold mb-6 text-[#169C81]">Upload Report</h2>
+            
+            <form action="/upload_report" method="POST" enctype="multipart/form-data">
+                <label class="text-xs text-gray-500 block mb-1">Report Name</label>
+                <input type="text" name="report_name" placeholder="e.g. Blood Test Dec 2024" class="glass-input" required>
+                
+                <div class="border-2 border-dashed border-[#169C81]/30 rounded-xl p-6 text-center hover:bg-[#E4F9D1]/50 transition cursor-pointer relative mt-4 mb-6">
+                    <input type="file" name="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" required onchange="document.getElementById('fileName').innerText = this.files[0].name">
+                    <div class="text-3xl mb-2 text-[#005D7E]">📄</div>
+                    <p class="text-sm text-gray-500">Click to select file</p>
+                    <p id="fileName" class="text-[#169C81] text-xs mt-2 font-bold"></p>
+                </div>
+
+                <button type="submit" class="w-full py-3 rounded-xl font-bold text-white shadow-lg hover:scale-[1.02] transition" style="background: linear-gradient(135deg, #169C81, #005D7E);">
+                    Upload Document
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.toggle('active');
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            
+            // Force sync: If either is active, close both. Otherwise, open both.
+            if (sidebar.classList.contains('active') || overlay.classList.contains('active')) {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            } else {
+                sidebar.classList.add('active');
+                overlay.classList.add('active');
+            }
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+            // Ensure sidebar and overlay are fully closed when opening a modal
+            document.getElementById('sidebar').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+    </script>
+</body>
+</html>

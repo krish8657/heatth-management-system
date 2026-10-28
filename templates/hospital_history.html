@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital History - Lab Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'slide-in': 'slideIn 0.5s ease-out',
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'bounce-gentle': 'bounceGentle 2s infinite'
+                    },
+                    keyframes: {
+                        slideIn: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        },
+                        bounceGentle: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-5px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-hover:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .scroll-smooth::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .scroll-smooth::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .scroll-smooth::-webkit-scrollbar-thumb {
+            background: rgba(147, 51, 234, 0.5);
+            border-radius: 4px;
+        }
+
+        .scroll-smooth::-webkit-scrollbar-thumb:hover {
+            background: rgba(147, 51, 234, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="border-b border-white/10 bg-gradient-to-r from-slate-900/80 to-slate-800/80 backdrop-blur-xl sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 via-indigo-500 to-blue-500 flex items-center justify-center shadow-lg">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                            Test History
+                        </h1>
+                        <p class="text-sm text-gray-400">
+                            View completed and rejected lab bookings
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="/hospital/dashboard" class="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white transition-all text-sm font-semibold shadow-lg flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+                        </svg>
+                        Dashboard
+                    </a>
+                    <a href="/logout" class="px-4 py-2 rounded-lg bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white transition-all text-sm font-semibold shadow-lg">
+                        Sign Out
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 py-12">
+        <!-- Completed & Reports Section -->
+        <section class="mb-12 animate-fade-in">
+            <div class="mb-8">
+                <div class="flex items-center gap-3 mb-2">
+                    <svg class="w-8 h-8 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <h2 class="text-2xl font-bold text-white">✅ Completed & Reports Submitted</h2>
+                </div>
+                <p class="text-gray-400 text-sm">Lab tests that have been completed and reports have been submitted</p>
+            </div>
+
+            {% if completed_bookings %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for booking in completed_bookings %}
+                        <div class="glass glass-hover rounded-xl overflow-hidden border border-emerald-500/20 group animate-slide-in" style="animation-delay: {{ loop.index * 0.1 }}s">
+                            <!-- Header -->
+                            <div class="h-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600"></div>
+                            
+                            <div class="p-6">
+                                <!-- Test Name -->
+                                <div class="mb-4">
+                                    <h3 class="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors line-clamp-2">
+                                        {{ booking.get('test_name', 'Unknown Test') }}
+                                    </h3>
+                                </div>
+
+                                <!-- User Info -->
+                                <div class="space-y-3 mb-5">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center flex-shrink-0 mt-1">
+                                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-xs text-gray-400">Patient</p>
+                                            <p class="text-sm font-semibold text-gray-200 truncate">{{ booking.get('user_name', 'Unknown') }}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
+                                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5.951-1.429 5.951 1.429a1 1 0 001.169-1.409l-7-14z"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-xs text-gray-400">Hospital</p>
+                                            <p class="text-sm font-semibold text-gray-200 truncate">{{ booking.get('hospital_name', 'Unknown') }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Dates -->
+                                <div class="grid grid-cols-2 gap-3 mb-5 py-4 border-y border-white/10">
+                                    <div>
+                                        <p class="text-xs text-gray-400">Booked Date</p>
+                                        <p class="text-sm font-semibold text-gray-200">
+                                            {% if booking.get('created_at') %}
+                                                {{ booking.get('created_at').strftime('%b %d, %Y') }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-400">Scheduled Date</p>
+                                        <p class="text-sm font-semibold text-gray-200">
+                                            {% if booking.get('scheduled_date') %}
+                                                {{ booking.get('scheduled_date') }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Submission Info -->
+                                <div class="bg-emerald-500/10 rounded-lg p-3 border border-emerald-500/20 mb-4">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <p class="text-xs font-semibold text-emerald-400">Report Submitted</p>
+                                    </div>
+                                    <p class="text-xs text-gray-300">
+                                        {% if booking.get('report_submitted_at') %}
+                                            {{ booking.get('report_submitted_at').strftime('%b %d, %Y at %I:%M %p') }}
+                                        {% else %}
+                                            No date available
+                                        {% endif %}
+                                    </p>
+                                </div>
+
+                                <!-- Status Badge -->
+                                <div class="inline-block">
+                                    <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                        Completed
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="glass rounded-xl border border-white/10 p-12 text-center">
+                    <svg class="w-16 h-16 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-gray-400 text-lg">No completed bookings with reports yet</p>
+                </div>
+            {% endif %}
+        </section>
+
+        <!-- Rejected Section -->
+        <section class="animate-fade-in" style="animation-delay: 0.2s">
+            <div class="mb-8">
+                <div class="flex items-center gap-3 mb-2">
+                    <svg class="w-8 h-8 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                    </svg>
+                    <h2 class="text-2xl font-bold text-white">❌ Rejected Bookings</h2>
+                </div>
+                <p class="text-gray-400 text-sm">Lab tests that were rejected and did not proceed</p>
+            </div>
+
+            {% if rejected_bookings %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for booking in rejected_bookings %}
+                        <div class="glass glass-hover rounded-xl overflow-hidden border border-red-500/20 group animate-slide-in" style="animation-delay: {{ 0.2 + loop.index * 0.1 }}s">
+                            <!-- Header -->
+                            <div class="h-2 bg-gradient-to-r from-red-500 via-pink-500 to-red-600"></div>
+                            
+                            <div class="p-6">
+                                <!-- Test Name -->
+                                <div class="mb-4">
+                                    <h3 class="text-lg font-bold text-white group-hover:text-red-400 transition-colors line-clamp-2">
+                                        {{ booking.get('test_name', 'Unknown Test') }}
+                                    </h3>
+                                </div>
+
+                                <!-- User Info -->
+                                <div class="space-y-3 mb-5">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center flex-shrink-0 mt-1">
+                                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-xs text-gray-400">Patient</p>
+                                            <p class="text-sm font-semibold text-gray-200 truncate">{{ booking.get('user_name', 'Unknown') }}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
+                                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5.951-1.429 5.951 1.429a1 1 0 001.169-1.409l-7-14z"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-xs text-gray-400">Hospital</p>
+                                            <p class="text-sm font-semibold text-gray-200 truncate">{{ booking.get('hospital_name', 'Unknown') }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Dates -->
+                                <div class="grid grid-cols-2 gap-3 mb-5 py-4 border-y border-white/10">
+                                    <div>
+                                        <p class="text-xs text-gray-400">Booked Date</p>
+                                        <p class="text-sm font-semibold text-gray-200">
+                                            {% if booking.get('created_at') %}
+                                                {{ booking.get('created_at').strftime('%b %d, %Y') }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-400">Rejected Date</p>
+                                        <p class="text-sm font-semibold text-gray-200">
+                                            {% if booking.get('updated_at') %}
+                                                {{ booking.get('updated_at').strftime('%b %d, %Y') }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Rejection Info -->
+                                <div class="bg-red-500/10 rounded-lg p-3 border border-red-500/20 mb-4">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <svg class="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <p class="text-xs font-semibold text-red-400">Booking Rejected</p>
+                                    </div>
+                                    <p class="text-xs text-gray-300">The hospital decided not to proceed with this booking</p>
+                                </div>
+
+                                <!-- Status Badge -->
+                                <div class="inline-block">
+                                    <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-300 border border-red-500/30">
+                                        <span class="w-2 h-2 rounded-full bg-red-400"></span>
+                                        Rejected
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="glass rounded-xl border border-white/10 p-12 text-center">
+                    <svg class="w-16 h-16 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-gray-400 text-lg">No rejected bookings</p>
+                </div>
+            {% endif %}
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 mt-20 py-8 bg-gradient-to-b from-transparent to-slate-900/50">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <p class="text-gray-400 text-sm">
+                © 2024 Lab Management System. All rights reserved. | Hospital History & Records
+            </p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,451 @@
+/* ============================================
+   FUTURISTIC HEALTH SYSTEM - GLOBAL STYLES
+   ============================================ */
+
+:root {
+    --primary-color: #005D7E;
+    --secondary-color: #169C81;
+    --accent-color: #E4F9D1;
+    --bg-light: #F1F9FD;
+    --text-main: #005D7E;
+    --text-light: #ffffff;
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --shadow-color: rgba(22, 156, 129, 0.2);
+}
+
+/* ============================================
+   KEYFRAME ANIMATIONS
+   ============================================ */
+
+@keyframes floatIn {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInFromLeft {
+    0% {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInFromRight {
+    0% {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes glow {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(22, 156, 129, 0.3), inset 0 0 20px rgba(22, 156, 129, 0.1);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(22, 156, 129, 0.6), inset 0 0 30px rgba(22, 156, 129, 0.2);
+    }
+}
+
+@keyframes shimmer {
+    0%, 100% {
+        background-position: 0% 0%;
+    }
+    50% {
+        background-position: 100% 100%;
+    }
+}
+
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(22, 156, 129, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(22, 156, 129, 0.6);
+    }
+}
+
+@keyframes rotate-360 {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes gradient-shift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+@keyframes bounce-subtle {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes pop-in {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes ripple {
+    0% {
+        width: 0;
+        height: 0;
+        opacity: 1;
+    }
+    100% {
+        width: 300px;
+        height: 300px;
+        opacity: 0;
+    }
+}
+
+/* ============================================
+   GLOBAL STYLES
+   ============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, var(--bg-light) 0%, #D2F0F0 100%);
+    color: var(--text-main);
+    line-height: 1.6;
+}
+
+/* ============================================
+   INTERACTIVE ELEMENTS
+   ============================================ */
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid #E4F9D1;
+    border-radius: 20px;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    animation: floatIn 0.6s ease-out;
+}
+
+.glass-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    background: #ffffff;
+    border-color: var(--secondary-color);
+    animation: pulse-glow 2s ease-in-out infinite;
+    box-shadow: 0 20px 40px rgba(22, 156, 129, 0.25);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-primary:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(22, 156, 129, 0.5);
+    text-shadow: 0 0 5px rgba(0, 93, 126, 0.3);
+}
+
+.btn-primary:active {
+    transform: translateY(-1px);
+}
+
+/* ============================================
+   INPUT FIELDS
+   ============================================ */
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select,
+textarea {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #D2F0F0;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    color: var(--text-main);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 20px rgba(22, 156, 129, 0.3);
+    transform: scale(1.02);
+    background: rgba(255, 255, 255, 1);
+}
+
+/* ============================================
+   CARDS & CONTAINERS
+   ============================================ */
+
+.feature-card {
+    background: white;
+    backdrop-filter: blur(10px);
+    border: 1px solid #D2F0F0;
+    padding: 1.5rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px var(--shadow-color);
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: floatIn 0.6s ease-out both;
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(22, 156, 129, 0.1) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.feature-card:hover::before {
+    opacity: 1;
+    animation: rotate-360 3s linear infinite;
+}
+
+.feature-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(22, 156, 129, 0.25);
+    background: linear-gradient(135deg, #ffffff 0%, rgba(228, 249, 209, 0.3) 100%);
+    border-color: var(--secondary-color);
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.feature-card h3 {
+    color: var(--primary-color);
+    margin-top: 0;
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover h3 {
+    color: var(--secondary-color);
+    text-shadow: 0 0 10px rgba(22, 156, 129, 0.3);
+}
+
+.feature-card p {
+    position: relative;
+    z-index: 1;
+}
+
+/* ============================================
+   GRADIENT & ANIMATIONS
+   ============================================ */
+
+.gradient-text {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.gradient-bg {
+    background: linear-gradient(-45deg, #005D7E, #169C81, #00a388, #005D7E);
+    background-size: 400% 400%;
+    animation: gradient-shift 8s ease infinite;
+}
+
+/* ============================================
+   BADGE & TAGS
+   ============================================ */
+
+.badge {
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.badge-primary {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.badge-light {
+    background: var(--accent-color);
+    color: var(--primary-color);
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.text-shadow {
+    text-shadow: 0 0 10px rgba(22, 156, 129, 0.3);
+}
+
+.shadow-glow {
+    box-shadow: 0 0 20px rgba(22, 156, 129, 0.3);
+}
+
+.shadow-glow:hover {
+    box-shadow: 0 0 40px rgba(22, 156, 129, 0.6);
+}
+
+.transition-smooth {
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.scale-hover:hover {
+    transform: scale(1.05);
+}
+
+.lift-hover:hover {
+    transform: translateY(-5px);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+    .glass-card {
+        padding: 1.25rem;
+    }
+
+    .feature-card {
+        padding: 1.25rem;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    select,
+    textarea {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        font-size: 14px;
+    }
+
+    .glass-card,
+    .feature-card {
+        border-radius: 12px;
+        padding: 1rem;
+    }
+
+    .btn-primary {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+button:focus,
+a:focus {
+    outline: 2px solid var(--secondary-color);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-light);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--secondary-color);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Health Records - Smart Health</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { 
+            background: linear-gradient(135deg, #BFDDDE 0%, rgba(131, 200, 209, 0.3) 50%, rgba(7, 80, 97, 0.05) 100%);
+            color: #075061; 
+            min-height: 100vh; 
+            font-family: 'Segoe UI', sans-serif;
+        }
+        
+        .glass-row { 
+            background: rgba(191, 221, 222, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(131, 200, 209, 0.3);
+            transition: 0.2s; 
+            box-shadow: 0 2px 8px rgba(7, 80, 97, 0.05);
+        }
+        .glass-row:hover { 
+            background: rgba(131, 200, 209, 0.25);
+            border-color: #228693;
+            transform: scale(1.01); 
+            box-shadow: 0 10px 20px rgba(34, 134, 147, 0.15);
+        }
+        .glass-input { 
+            background: rgba(191, 221, 222, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(131, 200, 209, 0.3);
+            color: #075061;
+        }
+        .glass-input:focus { 
+            outline: none; 
+            border-color: #228693; 
+            box-shadow: 0 0 15px rgba(34, 134, 147, 0.3);
+            background: rgba(131, 200, 209, 0.25);
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            background: linear-gradient(135deg, rgba(7, 80, 97, 0.7), rgba(34, 134, 147, 0.7));
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 20px 30px;
+            box-shadow: 0 8px 32px rgba(7, 80, 97, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            animation: slideDownNav 0.6s ease-out;
+            margin: -2rem -2rem 2rem -2rem;
+            border-bottom: 1px solid rgba(131, 200, 209, 0.2);
+        }
+
+        @keyframes slideDownNav {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: white;
+            font-weight: 800;
+            font-size: 1.4rem;
+            transition: all 0.3s;
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .nav-logo-icon {
+            font-size: 1.8rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s;
+            position: relative;
+            padding-bottom: 5px;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: rgba(228, 249, 209, 0.8);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-links a:hover {
+            color: #E4F9D1;
+            transform: translateY(-3px);
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 15px 20px;
+            }
+
+            .nav-links {
+                gap: 15px;
+                font-size: 0.9rem;
+            }
+
+            .nav-logo {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body class="p-8">
+    <!-- Navigation -->
+    <div class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">
+                SmartHealth
+            </a>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/my_health_records">Records</a></li>
+                <li><a href="/inbox">Inbox</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="max-w-5xl mx-auto">
+        <div class="flex justify-between items-end mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-[#005D7E]">My Health Records</h1>
+                <p class="text-gray-500">Manage reports and track your daily medicine schedule.</p>
+            </div>
+            <a href="/" class="text-gray-500 hover:text-[#005D7E]">← Dashboard</a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- Medicine Schedule -->
+            <div>
+                <h2 class="text-xl font-bold mb-4 text-[#169C81]">💊 Medicines to Take</h2>
+                <div class="space-y-3">
+                    {% for med in medicines %}
+                    <div class="glass-row p-4 rounded-xl flex flex-col gap-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-bold text-lg text-[#005D7E]">{{ med.medicine_name }}</div>
+                                <div class="text-sm text-gray-500">
+                                    {{ med.frequency }} • {{ med.duration }} Days
+                                    <br><span class="text-xs text-[#169C81]">Dr. {{ med.doctor_name }}</span>
+                                </div>
+                                {% if med.instructions %}
+                                <div class="text-xs text-gray-400 mt-1 italic">"{{ med.instructions }}"</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="mt-2 pt-2 border-t border-gray-200">
+                            <div class="grid grid-cols-3 gap-2">
+                                {% for day_item in med.schedule %}
+                                <div class="bg-[#F1F9FD] p-2 rounded text-center border border-[#D2F0F0]">
+                                    <div class="text-xs text-gray-500 mb-1">Day {{ day_item.day }}</div>
+                                    {% if day_item.status == 'Taken' %}
+                                        <span class="text-[#169C81] font-bold text-sm">✓ Taken</span>
+                                    {% elif day_item.status == 'Missed' %}
+                                        <span class="text-red-500 font-bold text-sm">✕ Missed</span>
+                                    {% else %}
+                                        <div class="flex flex-col gap-1">
+                                            <a href="/update_medicine_status/{{ med._id }}/{{ day_item.day }}/Taken" class="bg-[#E4F9D1] text-[#005D7E] hover:bg-[#169C81] hover:text-white text-xs py-1 rounded transition">Taken</a>
+                                            <a href="/update_medicine_status/{{ med._id }}/{{ day_item.day }}/Missed" class="bg-red-100 text-red-600 hover:bg-red-500 hover:text-white text-xs py-1 rounded transition">Missed</a>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-gray-500 text-center p-4">No active medicines.</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Right Panel: Profile & Reports -->
+            <div>
+                <!-- Reports Manager -->
+                <div>
+                    <h2 class="text-xl font-bold text-[#005D7E] mb-4">📂 Medical Reports</h2>
+
+                    <div class="rounded-xl overflow-hidden border border-[#D2F0F0] bg-white shadow-sm">
+                        <!-- Lab Bookings (Auto-added) -->
+                        {% for lab in lab_bookings %}
+                        <div class="p-3 flex justify-between items-center border-b border-gray-100">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xl">🧪</span>
+                                <div>
+                                    <div class="font-semibold text-sm text-[#005D7E]">{{ lab.test_name }}</div>
+                                    <div class="text-xs text-gray-500">{{ lab.date }} • Lab Result</div>
+                                </div>
+                            </div>
+                            <span class="text-xs bg-[#D2F0F0] text-[#005D7E] px-2 py-1 rounded">Linked</span>
+                        </div>
+                        {% endfor %}
+
+                        <!-- Uploaded Reports -->
+                        {% for report in reports %}
+                        <div class="p-3 flex justify-between items-center border-b border-gray-100 last:border-0">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xl">📄</span>
+                                <div>
+                                    <div class="font-semibold text-sm text-[#005D7E]">{{ report.name }}</div>
+                                    <div class="text-xs text-gray-500">{{ report.date }} • {{ report.type }}</div>
+                                </div>
+                            </div>
+                            <a href="{{ url_for('static', filename='uploads/' + report.filename) }}" target="_blank" class="text-[#169C81] hover:text-[#005D7E] text-xs border border-[#169C81] px-2 py-1 rounded transition">View File</a>
+                        </div>
+                        {% else %}
+                            {% if not lab_bookings %}
+                            <div class="p-4 text-center text-gray-400 text-sm">No reports found.</div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,10 @@
+Flask
+Flask-PyMongo
+pymongo
+python-dotenv
+Werkzeug
+Pillow
+stripe
+reportlab
+email-validator
+gunicorn

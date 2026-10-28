@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab Tests - Smart Health</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(135deg, #F1F9FD 0%, #D2F0F0 100%); color: #005D7E; min-height: 100vh; font-family: 'Segoe UI', sans-serif; }
+        
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.8); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid #E4F9D1; 
+            border-radius: 24px; 
+            transition: 0.3s; 
+            box-shadow: 0 4px 15px rgba(22, 156, 129, 0.05); 
+        }
+        .glass-card:hover { 
+            transform: translateY(-5px); 
+            background: #ffffff; 
+            border-color: #169C81; 
+            box-shadow: 0 20px 40px rgba(22, 156, 129, 0.15); 
+        }
+        
+        .hospital-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+            margin: 2px;
+        }
+        
+        .search-input {
+            border: 2px solid #D2F0F0;
+            border-radius: 12px;
+            padding: 12px 16px;
+            transition: all 0.3s;
+        }
+        
+        .search-input:focus {
+            border-color: #169C81;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(22, 156, 129, 0.1);
+        }
+    </style>
+</head>
+<body class="p-6">
+    <div class="max-w-7xl mx-auto">
+        <header class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+            <div>
+                <h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#005D7E] to-[#169C81]">Lab Tests & Diagnostics</h1>
+                <p class="text-gray-500 mt-1">Book trusted lab tests with home collection options.</p>
+            </div>
+            <a href="/" class="text-gray-500 hover:text-[#005D7E] text-sm">← Back to Dashboard</a>
+        </header>
+
+        <!-- Filter Section -->
+        <div class="glass-card p-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Category Filter -->
+                <div>
+                    <label class="block text-[#005D7E] font-semibold mb-3">🔍 Filter by Category:</label>
+                    <div class="flex gap-2 flex-wrap">
+                        <a href="/lab_tests" class="px-4 py-2 rounded-full text-sm transition font-medium {{ 'bg-[#005D7E] text-white shadow-md' if not selected_category else 'bg-[#F1F9FD] text-[#005D7E] hover:bg-[#D2F0F0]' }}">All</a>
+                        {% for cat in categories %}
+                        <a href="/lab_tests?category={{ cat }}{% if selected_hospital %}&hospital={{ selected_hospital }}{% endif %}" 
+                           class="px-4 py-2 rounded-full text-sm transition font-medium {{ 'bg-[#005D7E] text-white shadow-md' if selected_category == cat else 'bg-[#F1F9FD] text-[#005D7E] hover:bg-[#D2F0F0]' }}">
+                            {{ cat }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Hospital Filter -->
+                <div>
+                    <label class="block text-[#005D7E] font-semibold mb-3">🏨 Filter by Hospital:</label>
+                    <select onchange="window.location.href='/lab_tests?{% if selected_category %}category={{ selected_category }}&{% endif %}hospital=' + this.value" 
+                            class="search-input w-full">
+                        <option value="">All Hospitals</option>
+                        {% for hospital in hospitals %}
+                        <option value="{{ hospital.name }}" {{ 'selected' if selected_hospital == hospital.name else '' }}>
+                            {{ hospital.name }} - {{ hospital.address[:30] }}... (⭐ {{ hospital.rating }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            {% if selected_category or selected_hospital %}
+            <div class="mt-4 flex gap-2 items-center">
+                <span class="text-sm text-gray-600">Active Filters:</span>
+                {% if selected_category %}
+                <span class="px-3 py-1 bg-[#005D7E] text-white rounded-full text-xs">{{ selected_category }}</span>
+                {% endif %}
+                {% if selected_hospital %}
+                <span class="px-3 py-1 bg-purple-600 text-white rounded-full text-xs">{{ selected_hospital }}</span>
+                {% endif %}
+                <a href="/lab_tests" class="text-xs text-red-500 hover:underline ml-2">Clear All</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Tests Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for test in tests %}
+            <div class="glass-card p-6 flex flex-col">
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="text-xl font-bold text-[#005D7E]">{{ test.name }}</h3>
+                    <span class="text-[#169C81] font-bold text-lg">₹{{ test.price }}</span>
+                </div>
+                
+                <span class="text-xs bg-[#D2F0F0] text-[#005D7E] px-2 py-1 rounded w-fit mb-4 font-semibold">{{ test.category }}</span>
+                
+                <div class="space-y-2 mb-4 flex-grow">
+                
+                                    <!-- Available Hospitals -->
+                                    {% if test.available_at %}
+                                    <div class="mb-4 pb-4 border-t border-gray-200 pt-3">
+                                        <p class="text-xs text-gray-500 mb-2">🏥 Available at:</p>
+                                        <div class="flex flex-wrap gap-1">
+                                            {% for hospital_name in test.available_at %}
+                                            <span class="hospital-badge">{{ hospital_name }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                    <div class="flex items-start gap-2 text-sm text-gray-600">
+                        <span class="text-[#169C81]">ℹ️</span>
+                        <p>{{ test.parameters }}</p>
+                    </div>
+                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <span class="text-[#169C81]">⏱️</span>
+                        <p>Report in {{ test.delivery_time }}</p>
+                    </div>
+                </div>
+                
+                <div class="mt-auto">
+                    {% if logged_in %}
+                    <!-- Show hospital selection if multiple hospitals available -->
+                    {% if test.hospitals and test.hospitals|length > 1 %}
+                    <div class="mb-3">
+                        <label class="text-xs font-semibold text-gray-600 mb-1 block">📅 Booking Date</label>
+                        <input type="date" id="booking_date-{{ loop.index }}" name="booking_date" min="{{ today_date }}" max="{{ max_date }}" required 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm mb-2"
+                               placeholder="Select date">
+                        <p class="text-xs text-gray-500 mt-1">Within 7 days</p>
+                    </div>
+                    <div class="mb-3">
+                        <select id="hospital-{{ loop.index }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <option value="">Select Hospital</option>
+                            {% for hosp in test.hospitals %}
+                            <option value="{{ hosp.hospital_id }}" data-name="{{ hosp.hospital_name }}">{{ hosp.hospital_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button onclick="bookTest('{{ test.name }}', 'hospital-{{ loop.index }}', 'booking_date-{{ loop.index }}')" 
+                            class="w-full py-3 bg-gradient-to-r from-[#005D7E] to-[#169C81] text-white rounded-xl font-bold hover:shadow-lg transition">
+                        Book Test
+                    </button>
+                    {% else %}
+                    <!-- Direct booking if only one hospital -->
+                    <form action="/book_lab_test/{{ test.name }}" method="POST">
+                        <div class="mb-3">
+                            <label class="text-xs font-semibold text-gray-600 mb-1 block">📅 Booking Date</label>
+                            <input type="date" name="booking_date" min="{{ today_date }}" max="{{ max_date }}" required 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <p class="text-xs text-gray-500 mt-1">Within 7 days</p>
+                        </div>
+                        {% if test.hospitals and test.hospitals|length == 1 %}
+                        <input type="hidden" name="hospital_id" value="{{ test.hospitals[0].hospital_id }}">
+                        <input type="hidden" name="hospital_name" value="{{ test.hospitals[0].hospital_name }}">
+                        {% endif %}
+                        <button type="submit" class="w-full py-3 bg-gradient-to-r from-[#005D7E] to-[#169C81] text-white rounded-xl font-bold hover:shadow-lg transition">
+                            Book Test
+                        </button>
+                    </form>
+                    {% endif %}
+                    {% else %}
+                    <a href="/auth" class="block text-center w-full py-3 bg-gray-100 hover:bg-gray-200 rounded-xl font-bold transition text-gray-500">
+                        Login to Book
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="col-span-full text-center py-10">
+                <p class="text-gray-500 text-xl">No lab tests found matching your filters.</p>
+                <a href="/lab_tests" class="text-[#169C81] hover:underline mt-2 inline-block">Clear filters</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <script>
+        function bookTest(testName, selectId, dateId) {
+            const selectElement = document.getElementById(selectId);
+            const dateElement = document.getElementById(dateId);
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            const hospitalId = selectedOption.value;
+            const hospitalName = selectedOption.getAttribute('data-name');
+            const bookingDate = dateElement.value;
+            
+            if (!hospitalId) {
+                alert('Please select a hospital first');
+                return;
+            }
+            
+            if (!bookingDate) {
+                alert('Please select a booking date');
+                return;
+            }
+            
+            // Create form and submit
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/book_lab_test/${encodeURIComponent(testName)}`;
+            
+            const bookingDateInput = document.createElement('input');
+            bookingDateInput.type = 'hidden';
+            bookingDateInput.name = 'booking_date';
+            bookingDateInput.value = bookingDate;
+            form.appendChild(bookingDateInput);
+            
+            const hospitalIdInput = document.createElement('input');
+            hospitalIdInput.type = 'hidden';
+            hospitalIdInput.name = 'hospital_id';
+            hospitalIdInput.value = hospitalId;
+            form.appendChild(hospitalIdInput);
+            
+            const hospitalNameInput = document.createElement('input');
+            hospitalNameInput.type = 'hidden';
+            hospitalNameInput.name = 'hospital_name';
+            hospitalNameInput.value = hospitalName;
+            form.appendChild(hospitalNameInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+        }
+    </script>
+</body>
+</html>

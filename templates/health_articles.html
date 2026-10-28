@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Articles - Health Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary: #075061;
+            --secondary: #228693;
+            --accent: #83C8D1;
+            --darkest: #042434;
+            --light: #BFDDDE;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--light) 0%, rgba(131, 200, 209, 0.3) 50%, rgba(7, 80, 97, 0.05) 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, rgba(7, 80, 97, 0.7), rgba(34, 134, 147, 0.7));
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 20px 30px;
+            box-shadow: 0 8px 32px rgba(7, 80, 97, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            animation: slideDownNav 0.6s ease-out;
+            border-bottom: 1px solid rgba(131, 200, 209, 0.2);
+        }
+        
+        @keyframes slideDownNav {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: white;
+            font-weight: 800;
+            font-size: 1.4rem;
+            transition: all 0.3s;
+        }
+        
+        .nav-logo:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+        
+        .nav-logo-icon {
+            font-size: 1.8rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s;
+            position: relative;
+            padding-bottom: 5px;
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: rgba(228, 249, 209, 0.8);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+        
+        .nav-links a:hover {
+            color: #E4F9D1;
+            transform: translateY(-3px);
+        }
+        
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 15px 20px;
+            }
+            
+            .nav-links {
+                gap: 15px;
+                font-size: 0.9rem;
+            }
+            
+            .nav-logo {
+                font-size: 1.2rem;
+            }
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: slideDown 0.6s ease-out;
+        }
+        
+        .page-header h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+        
+        .page-header p {
+            font-size: 1.1rem;
+            color: var(--secondary);
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .articles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .article-card {
+            background: rgba(191, 221, 222, 0.35);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(7, 80, 97, 0.1);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: slideUp 0.6s ease-out both;
+            border: 1px solid rgba(131, 200, 209, 0.3);
+        }
+        
+        .article-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 15px 40px rgba(34, 134, 147, 0.2);
+            background: rgba(131, 200, 209, 0.25);
+            border-color: rgba(131, 200, 209, 0.5);
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .article-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+        
+        .article-content {
+            padding: 20px;
+        }
+        
+        .article-tag {
+            display: inline-block;
+            background: var(--accent);
+            color: var(--primary);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .article-title {
+            color: var(--primary);
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        
+        .article-excerpt {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .article-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid var(--accent);
+            font-size: 0.85rem;
+            color: #999;
+        }
+        
+        .read-more {
+            color: var(--secondary);
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .read-more:hover {
+            color: var(--primary);
+        }
+        
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-bottom: 30px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .back-btn:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 6px 20px rgba(0, 93, 126, 0.3);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--primary);
+            border-top: 2px solid var(--accent);
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <div class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">
+                SmartHealth
+            </a>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/my_health_records">Records</a></li>
+                <li><a href="/inbox">Inbox</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Container -->
+    <div class="container">
+        <!-- Back Button -->
+        <a href="/" class="back-btn">← Back to Dashboard</a>
+        
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>📚 Latest Health Insights</h1>
+            <p>Expert articles on wellness, disease prevention, and healthy living</p>
+        </div>
+        
+        <!-- Articles Grid -->
+        <div class="articles-grid">
+            <div class="article-card" style="animation-delay: 0s;">
+                <img src="https://images.unsplash.com/photo-1505751172876-fa1923c5c528?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Heart Health" class="article-image">
+                <div class="article-content">
+                    <span class="article-tag">❤️ Cardiology</span>
+                    <h3 class="article-title">10 Tips for a Healthy Heart</h3>
+                    <p class="article-excerpt">Discover simple lifestyle changes that can significantly improve your cardiovascular health and reduce the risk of heart disease.</p>
+                    <div class="article-meta">
+                        <span>📅 Jan 15, 2026</span>
+                        <a href="#" class="read-more">Read More →</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="article-card" style="animation-delay: 0.1s;">
+                <img src="https://images.unsplash.com/photo-1511688878353-3a2f5be94cd7?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Nutrition" class="article-image">
+                <div class="article-content">
+                    <span class="article-tag">🥗 Nutrition</span>
+                    <h3 class="article-title">Superfoods You Need</h3>
+                    <p class="article-excerpt">Boost your immunity with these nutrient-rich foods that should be part of your daily diet for optimal health.</p>
+                    <div class="article-meta">
+                        <span>📅 Jan 12, 2026</span>
+                        <a href="#" class="read-more">Read More →</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="article-card" style="animation-delay: 0.2s;">
+                <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Fitness" class="article-image">
+                <div class="article-content">
+                    <span class="article-tag">🧘 Fitness</span>
+                    <h3 class="article-title">Yoga for Mental Peace</h3>
+                    <p class="article-excerpt">Learn how 15 minutes of daily yoga can reduce stress, improve mental clarity, and enhance your overall well-being.</p>
+                    <div class="article-meta">
+                        <span>📅 Jan 10, 2026</span>
+                        <a href="#" class="read-more">Read More →</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="article-card" style="animation-delay: 0.3s;">
+                <img src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Sleep" class="article-image">
+                <div class="article-content">
+                    <span class="article-tag">😴 Sleep Health</span>
+                    <h3 class="article-title">The Power of Quality Sleep</h3>
+                    <p class="article-excerpt">Understanding why sleep is crucial and proven techniques to improve your sleep quality for better health outcomes.</p>
+                    <div class="article-meta">
+                        <span>📅 Jan 08, 2026</span>
+                        <a href="#" class="read-more">Read More →</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="article-card" style="animation-delay: 0.4s;">
+                <img src="https://images.unsplash.com/photo-1576091160399-48f1f1c4daba?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Stress Management" class="article-image">
+                <div class="article-content">
+                    <span class="article-tag">🧠 Mental Health</span>
+                    <h3 class="article-title">Managing Stress Effectively</h3>
+                    <p class="article-excerpt">Practical strategies and mindfulness techniques to manage daily stress and maintain emotional well-being.</p>
+                    <div class="article-meta">
+                        <span>📅 Jan 05, 2026</span>
+                        <a href="#" class="read-more">Read More →</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="article-card" style="animation-delay: 0.5s;">
+                <img src="https://images.unsplash.com/photo-1584308666744-24d5f400f627?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Hydration" class="article-image">
+                <div class="article-content">
+                    <span class="article-tag">💧 Hydration</span>
+                    <h3 class="article-title">Importance of Staying Hydrated</h3>
+                    <p class="article-excerpt">Why water is essential, how much you need daily, and the incredible benefits of proper hydration on your health.</p>
+                    <div class="article-meta">
+                        <span>📅 Jan 03, 2026</span>
+                        <a href="#" class="read-more">Read More →</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="article-card" style="animation-delay: 0.6s;">
+                <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Weight Management" class="article-image">
+                <div class="article-content">
+                    <span class="article-tag">⚖️ Weight</span>
+                    <h3 class="article-title">Healthy Weight Management</h3>
+                    <p class="article-excerpt">Science-backed strategies for sustainable weight loss and management without extreme diets or unhealthy practices.</p>
+                    <div class="article-meta">
+                        <span>📅 Dec 28, 2025</span>
+                        <a href="#" class="read-more">Read More →</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="article-card" style="animation-delay: 0.7s;">
+                <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Immunity" class="article-image">
+                <div class="article-content">
+                    <span class="article-tag">🛡️ Immunity</span>
+                    <h3 class="article-title">Boost Your Immune System</h3>
+                    <p class="article-excerpt">Natural ways to strengthen your immunity through diet, exercise, sleep, and lifestyle habits for better disease prevention.</p>
+                    <div class="article-meta">
+                        <span>📅 Dec 25, 2025</span>
+                        <a href="#" class="read-more">Read More →</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="article-card" style="animation-delay: 0.8s;">
+                <img src="https://images.unsplash.com/photo-1552821081-c5b3e33b22c1?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Exercise" class="article-image">
+                <div class="article-content">
+                    <span class="article-tag">🏃 Exercise</span>
+                    <h3 class="article-title">Finding Your Perfect Workout</h3>
+                    <p class="article-excerpt">Explore different types of exercise and find the perfect routine that matches your fitness level and lifestyle goals.</p>
+                    <div class="article-meta">
+                        <span>📅 Dec 20, 2025</span>
+                        <a href="#" class="read-more">Read More →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>💚 Knowledge is the foundation of good health!</p>
+            <p style="margin-top: 10px; font-size: 0.9rem; opacity: 0.8;">Have questions? Chat with our AI Health Assistant for personalized advice</p>
+        </div>
+    </div>
+</body>
+</html>

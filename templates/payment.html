@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Payment - Smart Health</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .payment-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 1000px;
+            width: 100%;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Order Summary Card */
+        .order-summary {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .order-summary h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .order-summary h2::before {
+            content: "📋";
+            font-size: 28px;
+        }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #ecf0f1;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .item-row:last-child {
+            border-bottom: none;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .item-desc {
+            font-size: 13px;
+            color: #95a5a6;
+        }
+
+        .item-price {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .summary-section {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid #ecf0f1;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .summary-row:hover {
+            background-color: #f8f9fa;
+        }
+
+        .summary-row.total {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .summary-label {
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+
+        .summary-amount {
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        /* Payment Form Card */
+        .payment-form-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            animation: slideInRight 0.8s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .payment-form-container h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .payment-form-container h2::before {
+            content: "💳";
+            font-size: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        #card-element {
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            padding: 12px 15px;
+            font-size: 14px;
+        }
+
+        #card-element.StripeElement--focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .security-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f0f9ff;
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #2c3e50;
+        }
+
+        .security-info::before {
+            content: "🔒";
+            font-size: 18px;
+        }
+
+        .pay-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 25px;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .pay-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .pay-button:hover::before {
+            left: 100%;
+        }
+
+        .pay-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .pay-button:active {
+            transform: translateY(-1px);
+        }
+
+        .pay-button.loading {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .pay-button.loading::after {
+            content: '';
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            margin-left: 10px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .cancel-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #ecf0f1;
+            color: #7f8c8d;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .cancel-button:hover {
+            background-color: #bdc3c7;
+            color: #2c3e50;
+        }
+
+        #card-errors {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            display: none;
+            animation: shake 0.4s ease-in-out;
+            padding: 12px;
+            background-color: #fadbd8;
+            border-radius: 6px;
+            border-left: 4px solid #e74c3c;
+        }
+
+        #card-errors.show {
+            display: block;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .success-checkmark {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .success-checkmark.show {
+            display: block;
+        }
+
+        .checkmark {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .success-message {
+            color: #27ae60;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .success-details {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .payment-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .order-summary,
+            .payment-form-container {
+                padding: 20px;
+            }
+
+            .order-summary h2,
+            .payment-form-container h2 {
+                font-size: 20px;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        @keyframes borderPulse {
+            0% {
+                border-color: #667eea;
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
+            }
+            50% {
+                border-color: #764ba2;
+            }
+            100% {
+                border-color: #667eea;
+                box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+            }
+        }
+
+        @keyframes slideCounter {
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+
+        @keyframes particleFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0) translateX(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px) translateX(var(--tx, 0));
+            }
+        }
+
+        @keyframes cardFlip {
+            0% {
+                transform: rotateY(0deg);
+            }
+            50% {
+                transform: rotateY(90deg);
+            }
+            100% {
+                transform: rotateY(0deg);
+            }
+        }
+
+        @keyframes progressPulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+            }
+        }
+
+        .payment-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 1000px;
+            width: 100%;
+            animation: slideUp 0.6s ease-out;
+            position: relative;
+        }
+
+        .payment-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Order Summary Card */
+        .order-summary {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            animation: slideInLeft 0.8s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .order-summary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
+            background-size: 200% 100%;
+            animation: gradientShift 4s ease-in-out infinite;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .order-summary h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideCounter 0.8s ease-out;
+        }
+
+        .order-summary h2::before {
+            content: "📋";
+            font-size: 28px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #ecf0f1;
+            animation: fadeIn 0.6s ease-out;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .item-row:hover {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.05), transparent);
+            padding-left: 10px;
+            padding-right: -10px;
+        }
+
+        .item-row:last-child {
+            border-bottom: none;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .item-desc {
+            font-size: 13px;
+            color: #95a5a6;
+        }
+
+        .item-price {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 18px;
+            animation: slideCounter 0.8s ease-out;
+        }
+
+        .summary-section {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid #ecf0f1;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            animation: slideCounter 0.8s ease-out;
+        }
+
+        .summary-row:hover {
+            background-color: #f8f9fa;
+            transform: translateX(5px);
+        }
+
+        .summary-row.total {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-size: 200% 100%;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            animation: slideCounter 1s ease-out, gradientShift 4s ease-in-out infinite;
+        }
+
+        .summary-label {
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+
+        .summary-amount {
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        /* Payment Form Card */
+        .payment-form-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            animation: slideInRight 0.8s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .payment-form-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.05), transparent);
+            pointer-events: none;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .payment-form-container h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideCounter 0.8s ease-out;
+            position: relative;
+            z-index: 1;
+        }
+
+        .payment-form-container h2::before {
+            content: "💳";
+            font-size: 28px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+            animation: fadeIn 0.6s ease-out;
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 14px;
+            animation: slideCounter 0.8s ease-out;
+        }
+
+        #cardholderName {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            color: #2c3e50;
+            background-color: #ffffff;
+            position: relative;
+            z-index: 1;
+        }
+
+        #cardholderName:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background-color: #f8f9fa;
+        }
+
+        #cardholderName::placeholder {
+            color: #bdc3c7;
+        }
+
+        #card-element {
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            padding: 12px 15px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #ffffff;
+        }
+
+        #card-element:hover {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        #card-element.StripeElement--focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            animation: borderPulse 1s ease-in-out;
+        }
+
+        .security-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #f5f7ff 100%);
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #2c3e50;
+            animation: slideCounter 1s ease-out;
+            position: relative;
+            z-index: 1;
+        }
+
+        .security-info::before {
+            content: "🔒";
+            font-size: 18px;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .pay-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-size: 200% 100%;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 1;
+        }
+
+        .pay-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .pay-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4), 0 0 20px rgba(118, 75, 162, 0.2);
+            background-position: 100% center;
+            animation: progressPulse 2s infinite;
+        }
+
+        .pay-button:hover::before {
+            left: 100%;
+        }
+
+        .pay-button:active {
+            transform: translateY(-1px);
+        }
+
+        .pay-button.loading {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .pay-button.loading::after {
+            content: '';
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            margin-left: 10px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .cancel-button {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: #f8f9fa;
+            color: #7f8c8d;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .cancel-button:hover {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            border-color: #bdc3c7;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .cancel-button:active {
+            transform: translateY(0);
+        }
+
+        #card-errors,
+        .card-error-message {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            display: none;
+            animation: shake 0.4s ease-in-out;
+            padding: 12px;
+            background-color: #fadbd8;
+            border-radius: 6px;
+            border-left: 4px solid #e74c3c;
+            position: relative;
+            z-index: 1;
+        }
+
+        #card-errors.show {
+            display: block;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .success-checkmark {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.6s ease-out;
+            position: relative;
+            z-index: 1;
+        }
+
+        .success-checkmark.show {
+            display: block;
+        }
+
+        .checkmark {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), float 3s ease-in-out infinite;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .success-message {
+            color: #27ae60;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            animation: slideCounter 0.8s ease-out;
+        }
+
+        .success-details {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 20px;
+            animation: slideCounter 1s ease-out;
+        }
+
+        @media (max-width: 768px) {
+            .payment-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .order-summary,
+            .payment-form-container {
+                padding: 20px;
+            }
+
+            .order-summary h2,
+            .payment-form-container h2 {
+                font-size: 20px;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+    </style>
+</head>
+<body>
+        <div class="payment-container" data-stripe-key="{{ stripe_publishable_key }}" 
+            {% if appointment_id %}data-appointment-id="{{ appointment_id }}"{% endif %}
+            {% if test_name %}data-lab-test="{{ test_name }}"{% endif %}
+            {% if booking_id %}data-booking-id="{{ booking_id }}"{% endif %}
+            {% if back_url %}data-back-url="{{ back_url }}"{% endif %}>
+        <!-- Order Summary -->
+        <div class="order-summary">
+            <h2>Order Summary</h2>
+
+            {% for item in items %}
+            <div class="item-row">
+                <div class="item-info">
+                    <div class="item-name">{{ item.description }}</div>
+                    <div class="item-desc">Qty: {{ item.quantity }}</div>
+                </div>
+                <div class="item-price">₹{{ "%.2f"|format(item.price * item.quantity) }}</div>
+            </div>
+            {% endfor %}
+
+            <div class="summary-section">
+                <div class="summary-row">
+                    <span class="summary-label">Subtotal</span>
+                    <span class="summary-amount">₹{{ "%.2f"|format(subtotal) }}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Tax (10%)</span>
+                    <span class="summary-amount">₹{{ "%.2f"|format(tax) }}</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total Amount</span>
+                    <span>₹{{ "%.2f"|format(total) }}</span>
+                </div>
+            </div>
+
+            {% if appointment_id %}
+            <div style="margin-top: 20px; padding: 15px; background-color: #f0f9ff; border-radius: 8px; border-left: 4px solid #667eea;">
+                <p style="color: #2c3e50; font-size: 13px;"><strong>📅 Appointment</strong></p>
+                <p style="color: #7f8c8d; font-size: 12px; margin-top: 5px;">Doctor: {{ doctor_name }}</p>
+                <p style="color: #7f8c8d; font-size: 12px;">Date: {{ appointment_date }}</p>
+            </div>
+            {% endif %}
+
+            {% if test_name %}
+            <div style="margin-top: 20px; padding: 15px; background-color: #f0f9ff; border-radius: 8px; border-left: 4px solid #667eea;">
+                <p style="color: #2c3e50; font-size: 13px;"><strong>🧪 Lab Test</strong></p>
+                <p style="color: #7f8c8d; font-size: 12px; margin-top: 5px;">Test: {{ test_name }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Payment Form -->
+        <div class="payment-form-container">
+            <h2>Payment Details</h2>
+
+            <form id="paymentForm" method="POST">
+                <div class="form-group">
+                    <label for="cardholderName">Cardholder Name <span style="color: #e74c3c;">*</span></label>
+                    <input type="text" id="cardholderName" name="cardholderName" 
+                           placeholder="John Doe" required autocomplete="cc-name"
+                           style="width: 100%; padding: 12px 15px; border: 2px solid #ecf0f1; 
+                                  border-radius: 8px; font-size: 14px; font-family: inherit; 
+                                  transition: all 0.3s ease; color: #2c3e50; background-color: #ffffff;" />
+                </div>
+
+                <div class="form-group">
+                    <label for="card-element">Card Information <span style="color: #e74c3c;">*</span></label>
+                    <div id="card-element" style="padding: 12px 15px;"></div>
+                    <div id="card-errors" role="alert"></div>
+                </div>
+
+                <div class="security-info">
+                    Your payment information is encrypted and secure. Stripe processes all payments safely.
+                </div>
+
+                <button type="submit" class="pay-button" id="payButton">Pay ₹{{ "%.2f"|format(total) }}</button>
+                <button type="button" class="cancel-button" id="backButton">← Back</button>
+            </form>
+
+            <!-- Success Message -->
+            <div class="success-checkmark" id="successMessage">
+                <div class="checkmark">✓</div>
+                <div class="success-message">Payment Successful!</div>
+                <div class="success-details">Your payment has been processed. Check your email for confirmation and invoice.</div>
+                <button type="button" class="pay-button" onclick="window.location.href='/inbox'" style="margin-top: 15px;">View Details</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <style>
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9));
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease-out;
+            backdrop-filter: blur(5px);
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .spinner {
+            width: 80px;
+            height: 80px;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3), inset 0 0 30px rgba(255, 255, 255, 0.1);
+        }
+
+        .spinner::after {
+            content: '⏳';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+            animation: float 2s ease-in-out infinite;
+        }
+
+        /* Confetti pieces */
+        .confetti {
+            position: fixed;
+            width: 9px;
+            height: 14px;
+            border-radius: 2px;
+            z-index: 1100;
+            opacity: 0.95;
+            pointer-events: none;
+            transform-origin: center;
+            animation: confettiFall 3.2s linear forwards, confettiSpin 1.2s linear infinite;
+        }
+
+        @keyframes confettiFall {
+            0% { transform: translateY(-20vh) rotate(0deg) translateX(0); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg) translateX(60px); opacity: 0.95; }
+        }
+
+        @keyframes confettiSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        class StripePaymentHandler {
+            constructor(publishableKey, appointmentId = null, labTestName = null, bookingId = null) {
+                this.stripe = Stripe(publishableKey);
+                this.appointmentId = appointmentId;
+                this.labTestName = labTestName;
+                this.bookingId = bookingId;
+                this.elements = null;
+                this.cardElement = null;
+                this.clientSecret = null;
+            }
+
+            async initialize() {
+                this.elements = this.stripe.elements();
+                this.cardElement = this.elements.create('card', {
+                    style: {
+                        base: {
+                            fontSize: '16px',
+                            color: '#2c3e50',
+                            fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
+                            '::placeholder': {
+                                color: '#bdc3c7',
+                            },
+                        },
+                        invalid: {
+                            color: '#e74c3c',
+                        },
+                    },
+                });
+                this.cardElement.mount('#card-element');
+                this.cardElement.addEventListener('change', (event) => this.handleCardChange(event));
+            }
+
+            handleCardChange(event) {
+                const displayError = document.getElementById('card-errors');
+                if (event.error) {
+                    displayError.textContent = event.error.message;
+                    displayError.classList.add('show');
+                } else {
+                    displayError.textContent = '';
+                    displayError.classList.remove('show');
+                }
+            }
+
+            async createPaymentIntent() {
+                let paymentUrl;
+                let data = {};
+
+                if (this.appointmentId) {
+                    paymentUrl = `/process_payment/appointment/${this.appointmentId}`;
+                } else if (this.labTestName) {
+                    paymentUrl = `/process_payment/lab_test`;
+                    data.test_name = this.labTestName;
+                    if (this.bookingId) {
+                        data.booking_id = this.bookingId;
+                    } else {
+                        throw new Error('Booking ID is missing for lab test payment');
+                    }
+                }
+
+                try {
+                    const response = await fetch(paymentUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data),
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        this.clientSecret = result.client_secret;
+                        return true;
+                    } else {
+                        throw new Error(result.message || 'Failed to create payment intent');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    return false;
+                }
+            }
+
+            async confirmPayment() {
+                if (!this.clientSecret) {
+                    return { success: false, message: 'Payment intent not created' };
+                }
+
+                try {
+                    const cardholderNameInput = document.getElementById('cardholderName');
+                    const cardholderName = cardholderNameInput?.value?.trim();
+                    
+                    if (!cardholderName || cardholderName.length < 2) {
+                        const error = document.getElementById('card-errors');
+                        error.textContent = 'Cardholder name must be at least 2 characters';
+                        error.classList.add('show');
+                        cardholderNameInput?.focus();
+                        return { success: false, message: 'Invalid cardholder name' };
+                    }
+
+                    const result = await this.stripe.confirmCardPayment(this.clientSecret, {
+                        payment_method: {
+                            card: this.cardElement,
+                            billing_details: {
+                                name: cardholderName
+                            }
+                        },
+                    });
+
+                    if (result.error) {
+                        return { success: false, message: result.error.message };
+                    }
+
+                    if (result.paymentIntent.status === 'succeeded') {
+                        return { success: true, paymentIntentId: result.paymentIntent.id };
+                    }
+                } catch (error) {
+                    return { success: false, message: error.message };
+                }
+            }
+
+            async handlePayment() {
+                document.getElementById('loadingOverlay').classList.add('show');
+                document.getElementById('payButton').classList.add('loading');
+                document.getElementById('payButton').disabled = true;
+
+                try {
+                    const intentCreated = await this.createPaymentIntent();
+                    if (!intentCreated) {
+                        throw new Error('Could not create payment intent');
+                    }
+
+                    const paymentResult = await this.confirmPayment();
+
+                    if (paymentResult.success) {
+                        // Show animated success sequence, notify other tabs, then close/redirect
+                        await showSuccessSequence({
+                            appointmentId: this.appointmentId,
+                            labTestName: this.labTestName,
+                            bookingId: this.bookingId,
+                            paymentIntentId: paymentResult.paymentIntentId
+                        });
+                    } else {
+                        throw new Error(paymentResult.message);
+                    }
+                } catch (error) {
+                    document.getElementById('loadingOverlay').classList.remove('show');
+                    document.getElementById('payButton').classList.remove('loading');
+                    document.getElementById('payButton').disabled = false;
+
+                    const errorElement = document.getElementById('card-errors');
+                    errorElement.textContent = error.message || 'Payment processing failed. Please try again.';
+                    errorElement.classList.add('show');
+                }
+            }
+        }
+
+        // Initialize on document load
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('[data-stripe-key]');
+            const publishableKey = container.dataset.stripeKey;
+            const appointmentId = container.dataset.appointmentId || null;
+            const labTestName = container.dataset.labTest || null;
+            const bookingId = container.dataset.bookingId || null;
+            const backUrl = container.dataset.backUrl || null;
+
+            const handler = new StripePaymentHandler(publishableKey, appointmentId, labTestName, bookingId);
+            handler.initialize();
+
+            const paymentForm = document.getElementById('paymentForm');
+            if (paymentForm) {
+                paymentForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await handler.handlePayment();
+                });
+            }
+
+            // Handle back button
+            const backButton = document.getElementById('backButton');
+            if (backButton) {
+                backButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (backUrl) {
+                        window.location.href = backUrl;
+                    } else {
+                        window.history.back();
+                    }
+                });
+            }
+        });
+
+        // ===== Success sequence & confetti =====
+        function createConfettiPiece(x, y, color) {
+            const el = document.createElement('div');
+            el.classList.add('confetti');
+            el.style.background = color;
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            el.style.transform = `rotate(${Math.random() * 360}deg)`;
+            document.body.appendChild(el);
+
+            // remove after animation
+            setTimeout(() => el.remove(), 3500);
+        }
+
+        function burstConfetti() {
+            const colors = ['#f6d365', '#fda085', '#a1c4fd', '#667eea', '#764ba2', '#169C81'];
+            const count = 40;
+            const w = window.innerWidth;
+            for (let i = 0; i < count; i++) {
+                const x = Math.random() * w;
+                const y = -20 - Math.random() * 100;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                setTimeout(() => createConfettiPiece(x, window.innerHeight * 0.2 + Math.random() * 100, color), Math.random() * 300);
+            }
+        }
+
+        async function showSuccessSequence(data) {
+            // Hide loading overlay but keep visual context
+            document.getElementById('loadingOverlay').classList.remove('show');
+            document.getElementById('payButton').classList.remove('loading');
+            document.getElementById('payButton').disabled = true;
+
+            // Reveal in-page success area
+            const successEl = document.getElementById('successMessage');
+            if (successEl) {
+                successEl.classList.add('show');
+            }
+
+            // Small celebratory confetti burst
+            burstConfetti();
+
+            // Call the payment success endpoint to update the appointment/lab test in the database
+            try {
+                if (data.appointmentId) {
+                    // For appointments
+                    const response = await fetch(`/payment_success/appointment/${data.appointmentId}`);
+                    if (!response.ok) {
+                        console.error('Failed to update appointment payment status');
+                    }
+                } else if (data.labTestName) {
+                    // For lab tests
+                    const response = await fetch(`/payment_success/lab_test?booking_id=${encodeURIComponent(data.bookingId)}`);
+                    if (!response.ok) {
+                        console.error('Failed to update lab test payment status');
+                    }
+                }
+            } catch (e) {
+                console.error('Error calling payment success endpoint:', e);
+            }
+
+            // Broadcast to other tabs / parent windows
+            try {
+                const payload = {
+                    type: 'payment_success',
+                    data: data,
+                    ts: Date.now()
+                };
+                // localStorage event for other tabs
+                localStorage.setItem('smart_health_payment', JSON.stringify(payload));
+
+                // postMessage to opener if exists
+                if (window.opener && !window.opener.closed) {
+                    try { window.opener.postMessage(payload, window.location.origin); } catch (e) {}
+                }
+            } catch (e) {
+                console.warn('Could not notify other tabs', e);
+            }
+
+            // Wait for the animations to play
+            await new Promise(res => setTimeout(res, 2200));
+
+            // If opened as a popup, try to close after notifying
+            const canClose = !!(window.opener && !window.opener.closed);
+            if (canClose) {
+                try { window.close(); } catch (e) { /* ignore */ }
+                return;
+            }
+
+            // Otherwise redirect to inbox with a query flag so server/UI can show confirmation
+            const redirectUrl = '/inbox?paid=1';
+            window.location.href = redirectUrl;
+        }
+
+        // Listen for click from parent or other tabs if needed (optional)
+        window.addEventListener('message', (ev) => {
+            try {
+                const payload = ev.data;
+                if (payload && payload.type === 'payment_success') {
+                    // could update UI if needed
+                    console.log('Payment success message received', payload);
+                }
+            } catch (e) {}
+        });
+    </script>
+</body>
+</html>
+

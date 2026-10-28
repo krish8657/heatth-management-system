@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Doctor Dashboard - Smart Health</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(to right, #0f2027, #203a43, #2c5364); color: white; min-height: 100vh; }
+        .glass-panel { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; }
+        .glass-card { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 15px; transition: 0.3s; }
+        .glass-card:hover { background: rgba(255, 255, 255, 0.12); transform: translateY(-2px); }
+        .btn-accept { background: linear-gradient(135deg, #42e695, #3bb2b8); }
+        .btn-manage { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+        /* Time slot styles for doctors - cyan theme */
+        .doctor-slot-available { background: rgba(79, 172, 254, 0.1); border: 2px solid #4facfe; }
+        .doctor-slot-available:hover { background: rgba(79, 172, 254, 0.3); }
+        .doctor-slot-booked { background: rgba(239, 68, 68, 0.2); border: 2px solid #ef4444; opacity: 0.5; cursor: not-allowed; }
+    </style>
+</head>
+<body class="p-6">
+    <div class="max-w-7xl mx-auto">
+        
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Doctor Portal</h1>
+                <p class="text-gray-400">Welcome back, Dr. {{ doctor.name }}</p>
+            </div>
+            <a href="{{ url_for('logout') }}" class="px-4 py-2 border border-white/20 rounded-lg hover:bg-white/10 transition text-sm">Logout</a>
+        </header>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="mb-6 space-y-2">
+                {% for category, message in messages %}
+                    <div class="p-4 rounded-lg {{ 'bg-green-500/20 text-green-300' if category == 'success' else 'bg-red-500/20 text-red-300' }} border border-white/10">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- LEFT COLUMN: Status & Pending Requests (4 cols) -->
+            <div class="lg:col-span-4 space-y-8">
+                
+                {% if not profile_complete %}
+                <div class="bg-red-500/20 border border-red-500/50 p-4 rounded-xl animate-pulse">
+                    <h3 class="text-red-300 font-bold flex items-center gap-2">⚠️ Profile Incomplete</h3>
+                    <p class="text-sm text-gray-300 mt-1">You cannot accept appointments until you complete your profile (Image, Fees, Address, etc.).</p>
+                    <button onclick="openProfileModal()" class="mt-3 w-full py-2 bg-red-600 hover:bg-red-500 rounded-lg font-bold text-sm transition">Complete Profile Now</button>
+                </div>
+                {% endif %}
+
+                <!-- Status Card -->
+                <div class="glass-panel p-6 text-center">
+                    {% if doctor.image %}
+                    <img src="{{ doctor.image }}" class="w-24 h-24 rounded-full mx-auto mb-4 border-2 border-blue-400 shadow-lg object-cover">
+                    {% else %}
+                    <div class="w-24 h-24 rounded-full mx-auto mb-4 border-2 border-dashed border-gray-500 flex items-center justify-center text-2xl">👨‍⚕️</div>
+                    {% endif %}
+                    <h2 class="text-xl font-bold">{{ doctor.name }}</h2>
+                    <p class="text-blue-300 text-sm mb-4">{{ doctor.specialty }}</p>
+                    
+                    <!-- Current Status Display -->
+                    <div class="bg-black/20 rounded-xl p-4 mb-4">
+                        <label class="block text-xs text-gray-400 mb-2 uppercase tracking-wider">Current Status</label>
+                        <div class="flex items-center justify-center gap-2 mb-3">
+                            {% if doctor.availability_status == 'Available' %}
+                                <span class="bg-green-500/30 px-3 py-1 rounded-full text-green-300 font-bold text-sm flex items-center gap-2">
+                                    🟢 Available
+                                </span>
+                            {% elif doctor.availability_status == 'Busy' %}
+                                <span class="bg-yellow-500/30 px-3 py-1 rounded-full text-yellow-300 font-bold text-sm flex items-center gap-2">
+                                    🟡 Busy
+                                    {% if doctor.busy_start_time and doctor.busy_end_time %}
+                                        <span class="text-xs">({{ doctor.busy_start_time }} - {{ doctor.busy_end_time }})</span>
+                                    {% endif %}
+                                </span>
+                            {% else %}
+                                <span class="bg-red-500/30 px-3 py-1 rounded-full text-red-300 font-bold text-sm flex items-center gap-2">
+                                    🔴 On Leave
+                                    {% if doctor.leave_start_date and doctor.leave_end_date %}
+                                        <span class="text-xs">(until {{ doctor.leave_end_date }})</span>
+                                    {% endif %}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Status Update Form -->
+                    <div class="bg-black/20 rounded-xl p-4">
+                        <label class="block text-xs text-gray-400 mb-2 uppercase tracking-wider">Change Status</label>
+                        <form id="statusForm" method="POST" action="{{ url_for('update_doctor_status') }}" class="space-y-3">
+                            <select id="statusSelect" name="status" class="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm focus:outline-none" onchange="showDurationInputs()">
+                                <option value="Available" class="text-black">Available</option>
+                                <option value="Busy" class="text-black">Busy</option>
+                                <option value="On Leave" class="text-black">On Leave</option>
+                            </select>
+                            
+                            <!-- Duration Inputs for Busy -->
+                            <div id="busyInputs" class="hidden space-y-2 pt-2 border-t border-white/10">
+                                <div>
+                                    <label class="text-xs text-gray-400">Busy From</label>
+                                    <input type="time" name="busy_start_time" class="w-full bg-white/10 border border-white/20 rounded-lg px-2 py-1 text-sm text-white">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-400">Busy Until</label>
+                                    <input type="time" name="busy_end_time" class="w-full bg-white/10 border border-white/20 rounded-lg px-2 py-1 text-sm text-white">
+                                </div>
+                            </div>
+                            
+                            <!-- Duration Inputs for Leave -->
+                            <div id="leaveInputs" class="hidden space-y-2 pt-2 border-t border-white/10">
+                                <div>
+                                    <label class="text-xs text-gray-400">From Date</label>
+                                    <input type="date" name="leave_start_date" class="w-full bg-white/10 border border-white/20 rounded-lg px-2 py-1 text-sm text-white">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-400">Until Date</label>
+                                    <input type="date" name="leave_end_date" class="w-full bg-white/10 border border-white/20 rounded-lg px-2 py-1 text-sm text-white">
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-2">
+                                <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-lg text-sm font-bold transition">Set Status</button>
+                                <button type="button" onclick="cancelDoctorStatus()" class="flex-1 bg-red-600/80 hover:bg-red-500 px-3 py-2 rounded-lg text-sm font-bold transition">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <button onclick="openProfileModal()" class="mt-4 text-sm text-blue-400 hover:text-white underline">
+                        Edit Profile Details
+                    </button>
+                </div>
+
+                <!-- Pending Requests -->
+                <div>
+                    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <span class="bg-yellow-500/20 text-yellow-300 p-1 rounded text-sm">⚠️</span> 
+                        Appointment Requests
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        {% for appt in pending_appointments %}
+                        <div class="glass-card p-5 border-l-4 border-yellow-500">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-bold text-lg">{{ appt.username }}</h4>
+                                <span class="text-xs text-gray-400">{{ appt.date }}</span>
+                            </div>
+                            <p class="text-sm text-gray-300 mb-4 italic">"{{ appt.symptoms }}"</p>
+                            
+                            <!-- Time Slot Selection for Doctor -->
+                            <div class="mb-4 pb-4 border-b border-white/10">
+                                <label class="block text-xs font-semibold text-gray-300 mb-2">
+                                    🕐 Select Time Slot for Today
+                                    <span class="text-red-400">*</span>
+                                </label>
+                                <div class="grid grid-cols-3 gap-2 time-slots-doctor-{{ appt._id }}" data-appointment-id="{{ appt._id }}">
+                                    <p class="col-span-3 text-center text-gray-500 text-xs py-2">Loading slots...</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-2">
+                                <form action="{{ url_for('accept_appointment', appointment_id=appt._id) }}" method="POST" class="flex-1" onsubmit="return validateDoctorTimeSlot(this, '{{ appt._id }}')">
+                                    <input type="hidden" name="scheduled_time" class="time-input-doctor-{{ appt._id }}" value="">
+                                    {% if profile_complete %}
+                                    <button type="submit" class="w-full btn-accept py-2 rounded-lg font-bold text-white shadow-lg hover:opacity-90 transition">
+                                        Accept
+                                    </button>
+                                    {% else %}
+                                    <button type="button" onclick="alert('Please complete your profile first.')" class="w-full bg-gray-600 py-2 rounded-lg font-bold text-gray-400 cursor-not-allowed">
+                                        Locked
+                                    </button>
+                                    {% endif %}
+                                </form>
+                                <button onclick="openDeclineModal('{{ appt._id }}')" class="flex-1 bg-red-600/80 hover:bg-red-500 py-2 rounded-lg font-bold text-white shadow-lg hover:opacity-90 transition">
+                                    Decline
+                                </button>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="glass-panel p-6 text-center text-gray-400">
+                            No pending requests.
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Active Patients (8 cols) -->
+            <div class="lg:col-span-8">
+                <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <span class="bg-green-500/20 text-green-300 p-1 rounded text-sm">👥</span> 
+                    My Patients (Active & History)
+                </h3>
+
+                <div class="glass-panel overflow-hidden">
+                    {% if active_appointments %}
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-white/5 text-gray-300 text-sm uppercase">
+                                    <tr>
+                                        <th class="p-4">Patient Name</th>
+                                        <th class="p-4">Date & Time</th>
+                                        <th class="p-4">Status</th>
+                                        <th class="p-4">Payment</th>
+                                        <th class="p-4 text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-white/10">
+                                    {% for appt in active_appointments %}
+                                    <tr class="hover:bg-white/5 transition">
+                                        <td class="p-4 font-semibold">{{ appt.username }}</td>
+                                        <td class="p-4 text-sm text-gray-300">
+                                            {{ appt.date }}
+                                            <div class="text-xs text-blue-300">{{ appt.time or 'Time not set' }}</div>
+                                        </td>
+                                        <td class="p-4">
+                                            <span class="px-2 py-1 rounded text-xs font-bold {{ 'bg-green-500/20 text-green-300' if appt.status == 'Confirmed' else 'bg-purple-500/20 text-purple-300' if appt.status == 'Completed' else 'bg-gray-500/20 text-gray-300' }}">
+                                                {{ appt.status }}
+                                            </span>
+                                        </td>
+                                        <td class="p-4">
+                                            <span class="px-2 py-1 rounded text-xs font-bold {{ 'bg-green-500/20 text-green-300' if appt.payment_status == 'completed' else 'bg-orange-500/20 text-orange-300' }}">
+                                                {% if appt.payment_status == 'completed' %}✓ Paid{% else %}Pending{% endif %}
+                                            </span>
+                                        </td>
+                                        <td class="p-4 text-right">
+                                            {% if appt.meeting_link %}
+                                            <a href="{{ appt.meeting_link }}" target="_blank" rel="noopener noreferrer"
+                                               class="btn-manage px-4 py-2 rounded-lg text-white text-sm font-bold shadow hover:opacity-90 transition inline-block mr-2">
+                                                Join Meeting
+                                            </a>
+                                            {% endif %}
+                                            <a href="{{ url_for('manage_appointment', appointment_id=appt._id) }}" 
+                                               class="btn-manage px-4 py-2 rounded-lg text-white text-sm font-bold shadow hover:opacity-90 transition inline-block">
+                                                Open File
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="p-10 text-center text-gray-400">
+                            <p class="text-lg">No active patients found.</p>
+                            <p class="text-sm">Accept requests from the left panel to see them here.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="profileModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="glass-panel p-8 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Edit Doctor Profile</h3>
+                <button onclick="closeProfileModal()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            
+            <form action="/doctor/update_profile" method="POST" enctype="multipart/form-data" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Specialty</label>
+                        <input type="text" name="specialty" value="{{ doctor.specialty }}" class="w-full bg-black/20 border border-white/20 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Qualification</label>
+                        <input type="text" name="qualification" value="{{ doctor.qualification }}" placeholder="e.g. MBBS, MD" class="w-full bg-black/20 border border-white/20 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Experience (Years)</label>
+                        <input type="number" name="experience_years" value="{{ doctor.experience_years }}" class="w-full bg-black/20 border border-white/20 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Consultation Fees (₹)</label>
+                        <input type="number" name="consultation_fees" value="{{ doctor.consultation_fees }}" class="w-full bg-black/20 border border-white/20 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Consultation Type</label>
+                    <input type="hidden" name="consultation_type" value="Online">
+                    <div class="w-full bg-black/20 border border-white/20 rounded-lg p-3 text-white">Online consultation only</div>
+                </div>
+
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Clinic Address</label>
+                    <textarea name="clinic_address" rows="2" class="w-full bg-black/20 border border-white/20 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-400" required>{{ doctor.clinic_address }}</textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Profile Image</label>
+                    <input type="file" name="image" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500">
+                    <p class="text-xs text-gray-500 mt-1">Upload a professional photo to be visible to patients.</p>
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl font-bold text-white shadow-lg hover:scale-[1.02] transition mt-4">
+                    Save Profile
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Decline Modal -->
+    <div id="declineModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="glass-panel p-8 rounded-2xl w-full max-w-md">
+            <h3 class="text-xl font-bold mb-4">Decline Appointment</h3>
+            <p class="text-gray-400 text-sm mb-4">Please provide a reason for declining. This message will be sent to the patient.</p>
+            <form id="declineForm" method="POST">
+                <textarea name="reason" class="w-full bg-black/20 border border-white/20 rounded-lg p-3 text-white h-28 focus:outline-none focus:ring-2 focus:ring-red-400" required placeholder="e.g., 'I am unavailable on this date. Please book for the next working day.'"></textarea>
+                <div class="flex gap-4 mt-6">
+                    <button type="button" onclick="closeDeclineModal()" class="flex-1 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition">Cancel</button>
+                    <button type="submit" class="flex-1 py-2 bg-red-600 hover:bg-red-500 rounded-lg font-bold transition">Decline & Send</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const declineModal = document.getElementById('declineModal');
+        const declineForm = document.getElementById('declineForm');
+        function openDeclineModal(appointmentId) {
+            declineForm.action = `/doctor/appointment/${appointmentId}/decline`;
+            declineModal.classList.remove('hidden');
+        }
+        function closeDeclineModal() { declineModal.classList.add('hidden'); }
+
+        const profileModal = document.getElementById('profileModal');
+        function openProfileModal() { profileModal.classList.remove('hidden'); }
+        function closeProfileModal() { profileModal.classList.add('hidden'); }
+
+        // AJAX Doctor Status Update with Real-time Broadcast
+        async function updateDoctorStatusAjax() {
+            const statusSelect = document.getElementById('statusSelect');
+            const newStatus = statusSelect.value;
+            
+            try {
+                const response = await fetch('{{ url_for("update_doctor_status") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `status=${encodeURIComponent(newStatus)}`
+                });
+
+                if (response.ok) {
+                    // Visual feedback - show success animation
+                    const button = document.querySelector('button[onclick="updateDoctorStatusAjax()"]');
+                    const originalText = button.textContent;
+                    button.textContent = '✓ Updated!';
+                    button.style.backgroundColor = '#10b981';
+                    
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.style.backgroundColor = '';
+                    }, 2000);
+
+                    // Broadcast update to all tabs/windows via localStorage
+                    localStorage.setItem('doctorStatusUpdated', JSON.stringify({
+                        timestamp: Date.now(),
+                        status: newStatus
+                    }));
+                }
+            } catch (error) {
+                console.error('Error updating status:', error);
+                alert('Failed to update status. Please try again.');
+            }
+        }
+
+        // Listen for status updates from other tabs
+        window.addEventListener('storage', function(event) {
+            if (event.key === 'doctorStatusUpdated') {
+                const data = JSON.parse(event.newValue);
+                const statusSelect = document.getElementById('statusSelect');
+                if (statusSelect) {
+                    statusSelect.value = data.status;
+                }
+            }
+        });
+
+        // ===== DOCTOR APPOINTMENT TIME SLOT MANAGEMENT =====
+        const doctorAvailableSlots = [
+            { value: '09:00', display: '9:00 AM' },
+            { value: '09:30', display: '9:30 AM' },
+            { value: '10:00', display: '10:00 AM' },
+            { value: '10:30', display: '10:30 AM' },
+            { value: '11:00', display: '11:00 AM' },
+            { value: '11:30', display: '11:30 AM' },
+            { value: '14:00', display: '2:00 PM' },
+            { value: '14:30', display: '2:30 PM' },
+            { value: '15:00', display: '3:00 PM' },
+            { value: '15:30', display: '3:30 PM' },
+            { value: '16:00', display: '4:00 PM' },
+            { value: '16:30', display: '4:30 PM' }
+        ];
+
+        // Fetch booked doctor appointment slots for today
+        async function fetchBookedDoctorSlots() {
+            const today = new Date().toISOString().split('T')[0];
+            try {
+                const response = await fetch(`/doctor/booked-slots?date=${today}`);
+                const data = await response.json();
+                return data.booked_slots || [];
+            } catch (error) {
+                console.error('Error fetching booked doctor slots:', error);
+                return [];
+            }
+        }
+
+        // Render doctor appointment time slots
+        async function renderDoctorTimeSlots(appointmentId) {
+            const container = document.querySelector(`.time-slots-doctor-${appointmentId}`);
+            if (!container) return;
+            
+            const bookedSlots = await fetchBookedDoctorSlots();
+            let html = '';
+            let firstAvailableSlot = null;
+
+            doctorAvailableSlots.forEach(slot => {
+                const isBooked = bookedSlots.includes(slot.value);
+                const disabledClass = isBooked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-blue-400/30';
+                const disabledAttr = isBooked ? 'disabled' : '';
+                const bgClass = isBooked ? 'bg-red-500/20 border-red-400' : 'bg-blue-500/10 border-blue-400';
+                const textClass = isBooked ? 'text-gray-400 line-through' : 'text-blue-300 font-medium';
+                
+                // Track the first available slot
+                if (!isBooked && !firstAvailableSlot) {
+                    firstAvailableSlot = slot;
+                }
+                
+                const isFirstAvailable = !isBooked && firstAvailableSlot && slot.value === firstAvailableSlot.value;
+                const checkedAttr = isFirstAvailable ? 'checked' : '';
+
+                html += `
+                    <label class="relative ${disabledClass} transition-all">
+                        <input 
+                            type="radio" 
+                            name="time-slot-doctor-${appointmentId}" 
+                            value="${slot.value}" 
+                            data-appointment-id="${appointmentId}"
+                            ${disabledAttr}
+                            ${checkedAttr}
+                            class="peer absolute opacity-0"
+                            onchange="updateDoctorTimeInput('${appointmentId}', '${slot.value}')"
+                        >
+                        <div class="p-2 rounded border-2 border-gray-600 peer-checked:border-cyan-300 peer-checked:bg-cyan-500/20 ${bgClass} text-center transition-all">
+                            <p class="text-xs ${textClass} peer-checked:text-white">
+                                ${slot.display}
+                                ${isBooked ? '<br/><span class="text-xs text-red-300">Booked</span>' : ''}
+                            </p>
+                        </div>
+                    </label>
+                `;
+            });
+
+            if (html) {
+                container.innerHTML = html;
+                // Auto-populate the first available time slot
+                if (firstAvailableSlot) {
+                    updateDoctorTimeInput(appointmentId, firstAvailableSlot.value);
+                }
+            }
+        }
+
+        // Update hidden doctor time input field
+        function updateDoctorTimeInput(appointmentId, time) {
+            const timeInput = document.querySelector(`.time-input-doctor-${appointmentId}`);
+            if (timeInput) {
+                timeInput.value = time;
+            }
+        }
+
+        // Validate doctor time slot before form submission
+        function validateDoctorTimeSlot(form, appointmentId) {
+            const timeInput = document.querySelector(`.time-input-doctor-${appointmentId}`);
+            if (!timeInput || !timeInput.value) {
+                alert('Please select a time slot to accept this appointment.');
+                return false;
+            }
+            return true;
+        }
+
+        // Show/Hide duration inputs based on status selection
+        function showDurationInputs() {
+            const status = document.getElementById('statusSelect').value;
+            const busyInputs = document.getElementById('busyInputs');
+            const leaveInputs = document.getElementById('leaveInputs');
+            
+            busyInputs.classList.add('hidden');
+            leaveInputs.classList.add('hidden');
+            
+            if (status === 'Busy') {
+                busyInputs.classList.remove('hidden');
+            } else if (status === 'On Leave') {
+                leaveInputs.classList.remove('hidden');
+            }
+        }
+
+        // Cancel status and revert to Available
+        function cancelDoctorStatus() {
+            if (confirm('Are you sure you want to cancel your status and revert to Available?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ url_for("cancel_doctor_status") }}';
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // Initialize doctor time slots when page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            const containers = document.querySelectorAll('[class*="time-slots-doctor-"]');
+            for (const container of containers) {
+                const appointmentId = container.getAttribute('data-appointment-id');
+                if (appointmentId) {
+                    await renderDoctorTimeSlots(appointmentId);
+                }
+            }
+            
+            // Initialize status form with current value
+            const currentStatus = '{{ doctor.availability_status or "Available" }}';
+            document.getElementById('statusSelect').value = currentStatus;
+            showDurationInputs();
+        });
+    </script>
+</body>
+</html>

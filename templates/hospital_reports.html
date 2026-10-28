@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Reports - Lab Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-hover:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .modal-overlay {
+            backdrop-filter: blur(8px);
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="border-b border-white/10 bg-gradient-to-r from-slate-900/80 to-slate-800/80 backdrop-blur-xl sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <a href="/hospital/dashboard" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold text-white">Submit Reports</h1>
+                            <p class="text-xs text-gray-400">Tests completed, ready for reports</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="/hospital/dashboard" class="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-all text-sm font-medium">
+                        ◀ Dashboard
+                    </a>
+                    <a href="/logout" class="px-4 py-2 rounded-lg bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white transition-all text-sm font-semibold shadow-lg">
+                        Sign Out
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Search Filter -->
+        <div class="mb-8">
+            <form method="GET" class="flex gap-3">
+                <input type="text" name="search" value="{{ search_query }}" placeholder="🔍 Search by test name or patient..." class="flex-1 px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:bg-white/15 transition-all">
+                <button type="submit" class="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-lg transition-all">
+                    Search
+                </button>
+            </form>
+        </div>
+
+        <!-- Bookings Grid -->
+        {% if bookings %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for booking in bookings %}
+                    <div class="glass glass-hover rounded-xl overflow-hidden border border-blue-500/20 group">
+                        <!-- Header -->
+                        <div class="h-2 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+                        
+                        <div class="p-6">
+                            <!-- Test Info -->
+                            <div class="mb-4">
+                                <h3 class="text-lg font-bold text-white group-hover:text-blue-400 transition-colors mb-1">{{ booking.get('test_name', 'Unknown') }}</h3>
+                                <p class="text-sm text-gray-400">{{ booking.get('test_category', 'General') }} Test</p>
+                            </div>
+
+                            <!-- Patient Info -->
+                            <div class="space-y-2 mb-5 pb-5 border-b border-white/10">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <div>
+                                        <p class="text-xs text-gray-400">Patient</p>
+                                        <p class="text-sm font-semibold text-white">{{ booking.get('user_name', 'Unknown') }}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-indigo-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                                    </svg>
+                                    <p class="text-sm text-gray-300 truncate">{{ booking.get('user_email', 'N/A') }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Test Details -->
+                            <div class="space-y-2 mb-5">
+                                <div class="flex justify-between items-center">
+                                    <p class="text-xs text-gray-400">📅 Test Date</p>
+                                    <p class="text-sm font-semibold text-white">{{ booking.get('scheduled_date', 'N/A') }}</p>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <p class="text-xs text-gray-400">🕐 Test Time</p>
+                                    <p class="text-sm font-semibold text-white">{{ booking.get('scheduled_time', 'N/A') }}</p>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <p class="text-xs text-gray-400">💰 Amount</p>
+                                    <p class="text-sm font-bold text-blue-400">₹{{ booking.get('test_price', 0) }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Status -->
+                            <div class="mb-5">
+                                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-500/30">
+                                    <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                                    <span class="text-blue-300 font-semibold text-sm">✓ Test Done</span>
+                                </div>
+                            </div>
+
+                            <!-- Action Button -->
+                            <button onclick="openUpload('{{ booking._id_str }}')" class="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold transition-all text-sm flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.3A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13H5.5z"></path>
+                                </svg>
+                                Upload Report
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="glass rounded-xl border border-white/10 p-16 text-center">
+                <svg class="w-20 h-20 text-gray-500 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-gray-400 text-xl mb-2">No Reports to Submit</p>
+                <p class="text-gray-500">All tests with completed work have had their reports submitted</p>
+            </div>
+        {% endif %}
+    </main>
+
+    <!-- Upload Modal -->
+    <div id="uploadModal" class="fixed inset-0 modal-overlay flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300 z-50">
+        <div class="modal-content p-8 rounded-2xl w-[480px] transform transition-all duration-300 scale-95 shadow-2xl">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                    📄 Upload Lab Report
+                </h2>
+                <button onclick="closeUpload()" class="text-gray-400 hover:text-white transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form id="uploadForm" method="post" enctype="multipart/form-data">
+                <div class="space-y-4">
+                    <div class="border-2 border-dashed border-gray-600 rounded-xl p-8 text-center hover:border-purple-500 transition-all cursor-pointer" onclick="document.querySelector('#fileInput').click()">
+                        <svg class="w-12 h-12 mx-auto mb-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        <p class="text-sm text-gray-400 mb-1">Click to upload or drag and drop</p>
+                        <p class="text-xs text-gray-500">PDF, DOC, DOCX (Max 10MB)</p>
+                        <input id="fileInput" type="file" name="report_file" class="hidden" required accept=".pdf,.doc,.docx" />
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" onclick="closeUpload()" class="px-6 py-2.5 rounded-lg bg-gray-700 hover:bg-gray-600 transition-all font-medium">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-2.5 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all font-semibold shadow-lg">
+                        📤 Upload & Submit
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 mt-20 py-8 bg-gradient-to-b from-transparent to-slate-900/50">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <p class="text-gray-400 text-sm">Lab Management System • Report Submission</p>
+        </div>
+    </footer>
+
+    <script>
+        function openUpload(id){
+            const modal = document.getElementById('uploadModal');
+            const form = document.getElementById('uploadForm');
+            form.action = `/hospital/lab/${id}/upload_report`;
+            modal.classList.remove('opacity-0','pointer-events-none');
+            modal.classList.add('opacity-100');
+            setTimeout(()=> modal.querySelector('.modal-content').classList.remove('scale-95'), 20);
+            setTimeout(()=> modal.querySelector('.modal-content').classList.add('scale-100'), 20);
+        }
+        
+        function closeUpload(){
+            const modal = document.getElementById('uploadModal');
+            modal.querySelector('.modal-content').classList.remove('scale-100');
+            modal.querySelector('.modal-content').classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('opacity-0','pointer-events-none');
+            }, 200);
+        }
+        
+        // File input label update
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name;
+            if (fileName) {
+                const container = this.closest('.border-dashed');
+                container.querySelector('p:first-of-type').textContent = `Selected: ${fileName}`;
+                container.classList.add('border-purple-500', 'bg-purple-500/10');
+            }
+        });
+    </script>
+</body>
+</html>

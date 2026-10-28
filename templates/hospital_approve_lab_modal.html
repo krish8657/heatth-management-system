@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approve & Schedule Lab Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-2xl">
+        <!-- Modal Container -->
+        <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-green-600 to-emerald-600 px-8 py-6">
+                <h1 class="text-3xl font-bold text-white flex items-center gap-3">
+                    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 3.062v6.756a3.066 3.066 0 01-3.062 3.062H7.041a3.066 3.066 0 01-3.062-3.062v-6.756a3.066 3.066 0 012.812-3.062zm7.75 4.175a.75.75 0 00-1.5 0v2.5h-2.5a.75.75 0 000 1.5h2.5v2.5a.75.75 0 001.5 0v-2.5h2.5a.75.75 0 000-1.5h-2.5v-2.5z" clip-rule="evenodd"></path>
+                    </svg>
+                    Schedule Lab Test
+                </h1>
+                <p class="text-green-100 mt-2">Set the appointment date and time for the patient</p>
+            </div>
+
+            <!-- Content -->
+            <div class="p-8">
+                <!-- Display Error Messages if any -->
+                {% if session.get('errors') %}
+                    <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded">
+                        <div class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                            </svg>
+                            <div>
+                                <h3 class="font-semibold text-red-800">Cannot Schedule Test</h3>
+                                <ul class="text-red-700 text-sm mt-2 space-y-1">
+                                    {% for error in session.get('errors', []) %}
+                                        <li>• {{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    {% do session.pop('errors', None) %}
+                {% endif %}
+
+                    <!-- Test Details Card -->
+                <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 mb-8">
+                    <h2 class="text-lg font-semibold text-blue-900 mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 000-2H6V3a1 1 0 01-1-1zm0 5a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1V7a1 1 0 011-1zm7-1a1 1 0 100 2 1 1 0 000-2zM9 9a1 1 0 100 2 1 1 0 000-2zm7 0a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd"></path>
+                        </svg>
+                        Test Details
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-blue-600 font-medium">Test Name</p>
+                            <p class="text-blue-900 font-semibold">{{ booking.test_name }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-blue-600 font-medium">Patient Name</p>
+                            <p class="text-blue-900 font-semibold">{{ booking.patient_name }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-blue-600 font-medium">Cost</p>
+                            <p class="text-blue-900 font-semibold">₹{{ "%.2f"|format(booking.price or booking.cost or booking.amount or 0) }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-blue-600 font-medium">📅 Appointment Date</p>
+                            <p class="text-blue-900 font-semibold">
+                                <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-bold">{{ fixed_date }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scheduling Form -->
+                <form method="POST" action="{{ url_for('hospital_approve_lab', booking_id=booking_id) }}" class="space-y-6">
+                    <!-- Hidden fixed date field -->
+                    <input type="hidden" name="scheduled_date" value="{{ fixed_date }}">
+                    
+                    <!-- Time Slot Selection -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-4">
+                            🕐 Select Time Slot for {{ fixed_date }}
+                            <span class="text-red-600">*</span>
+                        </label>
+                        <div id="time-slots-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3" data-booking-date="{{ fixed_date }}">
+                            <!-- Slots will be loaded here dynamically -->
+                            <p class="col-span-full text-center text-gray-500 py-4">Loading available time slots...</p>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-3">Select an available time slot for {{ fixed_date }} (5 slots max per day)</p>
+                    </div>
+
+                    <!-- Info Box -->
+                    <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+                        <p class="text-sm text-green-800">
+                            <strong>ℹ️ Note:</strong> Once scheduled, the patient will see this appointment date and time in their approval email and can proceed with payment. They must arrive 10 minutes before the scheduled time.
+                        </p>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex gap-4 pt-4">
+                        <button 
+                            type="submit"
+                            class="flex-1 px-6 py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold transition-all flex items-center justify-center gap-2"
+                        >
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            Approve & Schedule
+                        </button>
+                        <a 
+                            href="{{ url_for('hospital_dashboard') }}"
+                            class="flex-1 px-6 py-3 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold transition-all flex items-center justify-center gap-2"
+                        >
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                            </svg>
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Define available time slots
+        const availableSlots = [
+            { value: '09:00', display: '9:00 AM', period: 'Morning' },
+            { value: '09:30', display: '9:30 AM', period: 'Morning' },
+            { value: '10:00', display: '10:00 AM', period: 'Morning' },
+            { value: '10:30', display: '10:30 AM', period: 'Morning' },
+            { value: '11:00', display: '11:00 AM', period: 'Morning' },
+            { value: '11:30', display: '11:30 AM', period: 'Morning' },
+            { value: '14:00', display: '2:00 PM', period: 'Afternoon' },
+            { value: '14:30', display: '2:30 PM', period: 'Afternoon' },
+            { value: '15:00', display: '3:00 PM', period: 'Afternoon' },
+            { value: '15:30', display: '3:30 PM', period: 'Afternoon' },
+            { value: '16:00', display: '4:00 PM', period: 'Afternoon' },
+            { value: '16:30', display: '4:30 PM', period: 'Afternoon' }
+        ];
+
+        // Fetch booked slots from backend for the specified date
+        async function fetchBookedSlots(bookingDate) {
+            try {
+                const response = await fetch(`/hospital/lab/booked-slots?date=${bookingDate}`);
+                const data = await response.json();
+                return data.booked_slots || [];
+            } catch (error) {
+                console.error('Error fetching booked slots:', error);
+                return [];
+            }
+        }
+
+        // Render time slots
+        async function renderTimeSlots(bookingDate) {
+            const container = document.getElementById('time-slots-container');
+            const bookedSlots = await fetchBookedSlots(bookingDate);
+            let html = '';
+            let currentPeriod = null;
+
+            availableSlots.forEach(slot => {
+                // Add period header
+                if (slot.period !== currentPeriod) {
+                    if (currentPeriod !== null) {
+                        html += '<div class="col-span-2 sm:col-span-3 md:col-span-4 pt-4"></div>';
+                    }
+                    html += `<div class="col-span-2 sm:col-span-3 md:col-span-4"><p class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">${slot.period} Slots</p></div>`;
+                    currentPeriod = slot.period;
+                }
+
+                const isBooked = bookedSlots.includes(slot.value);
+                const disabledClass = isBooked ? 'opacity-50 cursor-not-allowed' : '';
+                const disabledAttr = isBooked ? 'disabled' : '';
+                const bgClass = isBooked ? 'bg-red-100 border-red-300' : '';
+                const bookedLabel = isBooked ? ' (Booked)' : '';
+
+                html += `
+                    <label class="relative flex items-center cursor-pointer ${disabledClass}">
+                        <input type="radio" name="scheduled_time" value="${slot.value}" ${disabledAttr} class="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500" ${isBooked ? 'style="cursor: not-allowed;"' : ''}>
+                        <span class="ml-2 text-sm font-medium text-gray-700">${slot.display}${bookedLabel}</span>
+                        <span class="absolute inset-0 rounded-lg border-2 border-transparent transition-all ${!isBooked ? 'hover:border-green-300' : ''} ${bgClass}"></span>
+                    </label>
+                `;
+            });
+
+            if (html) {
+                container.innerHTML = html;
+            }
+        }
+
+        // Load slots when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('time-slots-container');
+            const bookingDate = container.getAttribute('data-booking-date');
+            
+            // Render time slots for the booking date
+            renderTimeSlots(bookingDate);
+
+            // Prevent form submission if time is not selected
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function(e) {
+                const selectedTime = document.querySelector('input[name="scheduled_time"]:checked');
+
+                if (!selectedTime) {
+                    e.preventDefault();
+                    alert('Please select a time slot for the appointment.');
+                    return false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

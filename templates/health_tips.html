@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Tips - Health Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary: #075061;
+            --secondary: #228693;
+            --accent: #83C8D1;
+            --darkest: #042434;
+            --light: #BFDDDE;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--light) 0%, rgba(131, 200, 209, 0.3) 50%, rgba(7, 80, 97, 0.05) 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, rgba(7, 80, 97, 0.7), rgba(34, 134, 147, 0.7));
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 20px 30px;
+            box-shadow: 0 8px 32px rgba(7, 80, 97, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            animation: slideDownNav 0.6s ease-out;
+            border-bottom: 1px solid rgba(131, 200, 209, 0.2);
+        }
+        
+        @keyframes slideDownNav {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: white;
+            font-weight: 800;
+            font-size: 1.4rem;
+            transition: all 0.3s;
+        }
+        
+        .nav-logo:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+        
+        .nav-logo-icon {
+            font-size: 1.8rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s;
+            position: relative;
+            padding-bottom: 5px;
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: rgba(228, 249, 209, 0.8);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+        
+        .nav-links a:hover {
+            color: #E4F9D1;
+            transform: translateY(-3px);
+        }
+        
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 15px 20px;
+            }
+            
+            .nav-links {
+                gap: 15px;
+                font-size: 0.9rem;
+            }
+            
+            .nav-logo {
+                font-size: 1.2rem;
+            }
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: slideDown 0.6s ease-out;
+        }
+        
+        .page-header h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+        
+        .page-header p {
+            font-size: 1.1rem;
+            color: var(--secondary);
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .tip-card {
+            background: rgba(191, 221, 222, 0.35);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(7, 80, 97, 0.1);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: floatIn 0.6s ease-out both;
+            position: relative;
+            overflow: hidden;
+            border-left: 4px solid var(--accent);
+            border: 1px solid rgba(131, 200, 209, 0.3);
+        }
+        
+        .tip-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 15px 40px rgba(34, 134, 147, 0.2);
+            background: rgba(131, 200, 209, 0.25);
+            border-color: rgba(131, 200, 209, 0.5);
+        }
+        
+        .tip-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(34, 134, 147, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .tip-card:hover::before {
+            opacity: 1;
+        }
+        
+        .tip-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 50%;
+            font-weight: 800;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+        
+        .tip-card h3 {
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .tip-card p {
+            color: #666;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+        
+        .tip-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        @keyframes floatIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-bottom: 30px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .back-btn:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 6px 20px rgba(0, 93, 126, 0.3);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--primary);
+            border-top: 2px solid var(--accent);
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <div class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">
+                SmartHealth
+            </a>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/my_health_records">Records</a></li>
+                <li><a href="/inbox">Inbox</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Container -->
+    <div class="container">
+        <!-- Back Button -->
+        <a href="/" class="back-btn">← Back to Dashboard</a>
+        
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>💡 Daily Health Tips</h1>
+            <p>Discover actionable health advice for a better lifestyle</p>
+        </div>
+        
+        <!-- Tips Grid -->
+        <div class="tips-grid">
+            <div class="tip-card" style="animation-delay: 0s;">
+                <div class="tip-icon">🥗</div>
+                <div class="tip-number">1</div>
+                <h3>Eat Balanced Diet</h3>
+                <p>Include all food groups daily: fruits, vegetables, proteins, whole grains, and dairy. Aim for colorful vegetables to get diverse nutrients and maintain optimal health.</p>
+            </div>
+            
+            <div class="tip-card" style="animation-delay: 0.1s;">
+                <div class="tip-icon">💪</div>
+                <div class="tip-number">2</div>
+                <h3>Stay Active</h3>
+                <p>Exercise for at least 30 minutes, 5 days a week. Mix cardio, strength training, and flexibility work. Even small activities like walking help boost energy and overall fitness.</p>
+            </div>
+            
+            <div class="tip-card" style="animation-delay: 0.2s;">
+                <div class="tip-icon">😴</div>
+                <div class="tip-number">3</div>
+                <h3>Get Quality Sleep</h3>
+                <p>Maintain 7-9 hours of consistent sleep every night. Create a dark, cool, quiet environment. Avoid screens 1 hour before bed for better sleep quality.</p>
+            </div>
+            
+            <div class="tip-card" style="animation-delay: 0.3s;">
+                <div class="tip-icon">💧</div>
+                <div class="tip-number">4</div>
+                <h3>Stay Hydrated</h3>
+                <p>Drink 8-10 glasses of water daily. Proper hydration supports digestion, circulation, and temperature regulation. Start your day with a glass of water.</p>
+            </div>
+            
+            <div class="tip-card" style="animation-delay: 0.4s;">
+                <div class="tip-icon">🧘</div>
+                <div class="tip-number">5</div>
+                <h3>Manage Stress</h3>
+                <p>Practice meditation, yoga, or deep breathing for 15-20 minutes daily. Stress management improves mental health, reduces blood pressure, and boosts immunity.</p>
+            </div>
+            
+            <div class="tip-card" style="animation-delay: 0.5s;">
+                <div class="tip-icon">🚫</div>
+                <div class="tip-number">6</div>
+                <h3>Avoid Processed Foods</h3>
+                <p>Limit sugar, salt, and trans fats. Choose whole foods over packaged items. Read labels carefully and prepare meals at home when possible.</p>
+            </div>
+            
+            <div class="tip-card" style="animation-delay: 0.6s;">
+                <div class="tip-icon">⏱️</div>
+                <div class="tip-number">7</div>
+                <h3>Eat Regular Meals</h3>
+                <p>Don't skip meals, especially breakfast. Eat every 3-4 hours to maintain steady energy. Regular meal timing improves metabolism and prevents overeating.</p>
+            </div>
+            
+            <div class="tip-card" style="animation-delay: 0.7s;">
+                <div class="tip-icon">🏥</div>
+                <div class="tip-number">8</div>
+                <h3>Regular Checkups</h3>
+                <p>Schedule annual health checkups even if you feel fine. Early detection of health issues helps prevent serious complications and saves treatment costs.</p>
+            </div>
+            
+            <div class="tip-card" style="animation-delay: 0.8s;">
+                <div class="tip-icon">🚭</div>
+                <div class="tip-number">9</div>
+                <h3>Quit Smoking & Limit Alcohol</h3>
+                <p>Smoking damages lungs and heart. Limit alcohol to moderate levels. These changes dramatically improve health outcomes and add years to your life.</p>
+            </div>
+            
+            <div class="tip-card" style="animation-delay: 0.9s;">
+                <div class="tip-icon">👨‍👩‍👧‍👦</div>
+                <div class="tip-number">10</div>
+                <h3>Maintain Social Connections</h3>
+                <p>Spend time with family and friends. Social interaction improves mental health, reduces depression, and increases overall happiness and longevity.</p>
+            </div>
+            
+            <div class="tip-card" style="animation-delay: 1s;">
+                <div class="tip-icon">📱</div>
+                <div class="tip-number">11</div>
+                <h3>Limit Screen Time</h3>
+                <p>Reduce screen usage to 2-3 hours daily. Taking regular breaks prevents eye strain, improves sleep, and reduces stress. Use the 20-20-20 rule.</p>
+            </div>
+            
+            <div class="tip-card" style="animation-delay: 1.1s;">
+                <div class="tip-icon">🌞</div>
+                <div class="tip-number">12</div>
+                <h3>Get Sunlight Daily</h3>
+                <p>Spend 15-20 minutes in morning sunlight. Vitamin D synthesis improves bone health and mood. Sunlight exposure regulates circadian rhythm for better sleep.</p>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>💚 Remember: Small consistent changes lead to big health improvements!</p>
+            <p style="margin-top: 10px; font-size: 0.9rem; opacity: 0.8;">For personalized advice, chat with our AI Health Assistant</p>
+        </div>
+    </div>
+</body>
+</html>

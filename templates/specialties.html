@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Doctors by Specialty - Smart Health</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: linear-gradient(to right, #0f2027, #203a43, #2c5364); color: white; min-height: 100vh; }
+        .glass-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; transition: 0.3s; cursor: pointer; }
+        .glass-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.1); border-color: #4facfe; }
+    </style>
+</head>
+<body class="p-6">
+    <div class="max-w-6xl mx-auto">
+        <header class="flex justify-between items-center mb-10">
+            <div>
+                <h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Find a Doctor</h1>
+                <p class="text-gray-400 mt-2">Select a specialty to find the right doctor for you.</p>
+            </div>
+            <a href="/" class="text-gray-300 hover:text-white">← Dashboard</a>
+        </header>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {% for spec in specialties %}
+            <a href="/doctors/{{ spec.name }}" class="glass-card p-6 flex flex-col items-center text-center group">
+                <div class="text-5xl mb-4 transform group-hover:scale-110 transition duration-300">
+                    {{ spec.icon }}
+                </div>
+                <h3 class="text-xl font-bold mb-2">{{ spec.name }}</h3>
+                <p class="text-sm text-gray-400">{{ spec.description }}</p>
+            </a>
+            {% else %}
+            <div class="col-span-full text-center py-10">
+                <p class="text-gray-400">No specialties found. Please run seed_db.py.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
